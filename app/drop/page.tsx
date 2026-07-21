@@ -29,7 +29,7 @@ interface BatchItem {
   error?: string
   dup?: { existing: DupEntry[] }
   saved?: boolean
-  savedId?: number
+  savedId?: string
 }
 
 const ACCEPT = 'image/*,.pdf,.doc,.docx,.txt,.md'
@@ -52,7 +52,7 @@ async function ingestText(payload: { text?: string; url?: string }): Promise<Ext
   return res.json()
 }
 
-async function saveToTracker(extracted: Extracted, source: string, force: boolean): Promise<{ duplicate?: boolean; existing?: DupEntry[]; id?: number } | null> {
+async function saveToTracker(extracted: Extracted, source: string, force: boolean): Promise<{ duplicate?: boolean; existing?: DupEntry[]; slug?: string } | null> {
   const res = await fetch('/api/tracker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -65,7 +65,7 @@ async function saveToTracker(extracted: Extracted, source: string, force: boolea
   })
   if (res.status === 409) return res.json()
   const data = await res.json()
-  return { id: data.id }
+  return { slug: data.slug }
 }
 
 // ── Main page ──────────────────────────────────────────────────
@@ -94,7 +94,7 @@ export default function DropPage() {
 // Server handles OCR + extraction + dedup + tracker creation automatically.
 function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
   const [stage, setStage] = useState<'idle' | 'sending' | 'done' | 'skipped' | 'error'>('idle')
-  const [result, setResult] = useState<{ company?: string; role?: string; id?: number; existing?: { company: string; role: string; status: string } } | null>(null)
+  const [result, setResult] = useState<{ company?: string; role?: string; existing?: { company: string; role: string; status: string } } | null>(null)
   const [error, setError] = useState('')
   const [urlMode, setUrlMode] = useState(false)
   const [pasteMode, setPasteMode] = useState(false)
@@ -111,7 +111,7 @@ function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
       form.append('file', file)
       const res = await fetch('/api/tracker/ingest-and-save', { method: 'POST', body: form })
       const data = await res.json()
-      if (data.ok) { setResult({ company: data.company, role: data.role, id: data.id }); setStage('done') }
+      if (data.ok) { setResult({ company: data.company, role: data.role }); setStage('done') }
       else if (data.skipped) { setResult({ company: data.extracted?.company, role: data.extracted?.role, existing: data.existing }); setStage('skipped') }
       else { setError(data.error ?? 'Something went wrong'); setStage('error') }
     } catch (e) { setError((e as Error).message); setStage('error') }
@@ -324,7 +324,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
   const [urlText, setUrlText] = useState('')
   const [textContent, setTextContent] = useState('')
   const [log, setLog] = useState<LogEntry[]>([])
-  const [incoming, setIncoming] = useState<{ id: number; company: string; role: string; location: string; ts: string }[]>([])
+  const [incoming, setIncoming] = useState<{ slug: string; company: string; role: string; location: string; ts: string }[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
 
@@ -417,7 +417,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
     const result = await saveToTracker(singleExtracted, src, force)
     if (result?.duplicate && !force) { addLog('Duplicate detected — already in tracker', 'err'); setSingleDup(result as { existing: DupEntry[] }); return }
     addLog('Saved ✓ — opening job page', 'ok')
-    router.push(result?.id ? `/tracker/${result.id}` : '/tracker')
+    router.push(result?.slug ? `/tracker/${result.slug}` : '/tracker')
   }
 
   const saveBatchItem = async (idx: number, force: boolean) => {
@@ -433,7 +433,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
       return
     }
     addLog(`Saved ✓`, 'ok')
-    setBatch(prev => prev.map((it, i) => i === idx ? { ...it, saved: true, savedId: conflict?.id } : it))
+    setBatch(prev => prev.map((it, i) => i === idx ? { ...it, saved: true, savedId: conflict?.slug } : it))
   }
 
   const saveAllBatch = async () => {
@@ -511,7 +511,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
                 </p>
                 <div className="flex flex-col gap-2">
                   {incoming.map((item) => (
-                    <a key={`${item.id}-${item.ts}`} href={`/tracker/${item.id}`}
+                    <a key={`${item.slug}-${item.ts}`} href={`/tracker/${item.slug}`}
                       className="flex items-center justify-between gap-3 rounded-[12px] px-4 py-3 hover:opacity-80 transition-opacity"
                       style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)' }}>
                       <div className="flex flex-col gap-0.5 min-w-0">

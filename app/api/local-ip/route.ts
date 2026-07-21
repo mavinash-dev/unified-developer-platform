@@ -13,7 +13,7 @@ function getLocalIP(): string {
 
 export function GET() {
   const ip = getLocalIP()
-  const port = process.env.PORT ?? '3000'
+  const port = process.env.PORT ?? '3000' // Next.js sets PORT at runtime
   const hasVision = !!process.env.ANTHROPIC_API_KEY
   return NextResponse.json({
     ip,

@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { randomBytes } from 'crypto'
 import db from '@/lib/db'
+
+function newSlug() { return randomBytes(6).toString('hex') }
 
 export function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url)
@@ -50,10 +53,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const slug = newSlug()
   const result = db.prepare(`
-    INSERT INTO applications (company, role, url, status, location, remote, salary_range, jd_summary, key_skills, notes, source)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `).run(company.trim(), role.trim(), url, status, location, remote ? 1 : 0,
+    INSERT INTO applications (slug, company, role, url, status, location, remote, salary_range, jd_summary, key_skills, notes, source)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `).run(slug, company.trim(), role.trim(), url, status, location, remote ? 1 : 0,
     salary_range, jd_summary, JSON.stringify(key_skills), notes, source)
 
   const appId = result.lastInsertRowid

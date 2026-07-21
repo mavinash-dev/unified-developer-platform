@@ -93,6 +93,11 @@ db.exec(`
 // Additive migrations for existing DBs
 try { db.exec(`ALTER TABLE contacts ADD COLUMN email TEXT DEFAULT ''`) } catch { /* already exists */ }
 try { db.exec(`ALTER TABLE contacts ADD COLUMN phone TEXT DEFAULT ''`) } catch { /* already exists */ }
+try { db.exec(`ALTER TABLE applications ADD COLUMN slug TEXT`) } catch { /* already exists */ }
+
+// Backfill slugs for existing rows
+db.exec(`UPDATE applications SET slug = lower(hex(randomblob(6))) WHERE slug IS NULL OR slug = ''`)
+try { db.exec(`CREATE UNIQUE INDEX IF NOT EXISTS idx_applications_slug ON applications(slug)`) } catch { /* already exists */ }
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS resume_templates (

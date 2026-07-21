@@ -61,10 +61,10 @@ export async function POST(req: NextRequest) {
     JSON.stringify(extracted.key_skills ?? []), source
   )
 
-  const id = Number(result.lastInsertRowid)
+  const saved = db.prepare(`SELECT slug FROM applications WHERE id = ?`).get(result.lastInsertRowid) as { slug: string }
 
   emit({
-    id,
+    slug: saved.slug,
     company: extracted.company,
     role: extracted.role,
     location: extracted.location ?? '',
@@ -72,5 +72,5 @@ export async function POST(req: NextRequest) {
     ts: new Date().toISOString(),
   })
 
-  return NextResponse.json({ ok: true, id, company: extracted.company, role: extracted.role, source })
+  return NextResponse.json({ ok: true, slug: saved.slug, company: extracted.company, role: extracted.role, source })
 }

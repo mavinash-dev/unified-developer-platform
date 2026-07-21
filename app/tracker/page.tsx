@@ -23,6 +23,7 @@ interface Contact {
 
 interface Application {
   id: number
+  slug: string
   company: string
   role: string
   url: string
@@ -311,7 +312,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
   const next = STATUS_NEXT[app.status]
 
   const updateStatus = async (status: Status) => {
-    const res = await fetch(`/api/tracker/${app.id}`, {
+    const res = await fetch(`/api/tracker/${app.slug}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ status }),
@@ -320,7 +321,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
   }
 
   const saveNotes = async () => {
-    const res = await fetch(`/api/tracker/${app.id}`, {
+    const res = await fetch(`/api/tracker/${app.slug}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ notes }),
@@ -330,7 +331,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
   }
 
   const del = async () => {
-    await fetch(`/api/tracker/${app.id}`, { method: 'DELETE' })
+    await fetch(`/api/tracker/${app.slug}`, { method: 'DELETE' })
     onDeleted(app.id)
   }
 
@@ -338,7 +339,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
   const referralScoutArgs = `${app.role} at ${app.company}${app.location ? ` (${app.location})` : ''}${app.jd_summary ? `. Role: ${app.jd_summary}` : ''}`
 
   const reloadContacts = async () => {
-    const res = await fetch(`/api/tracker/${app.id}`)
+    const res = await fetch(`/api/tracker/${app.slug}`)
     onUpdated(await res.json())
   }
 
@@ -365,7 +366,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
                 <span className="font-mono text-[10px]" style={{ color: 'var(--fg-muted)' }}>{app.salary_range}</span>
               )}
             </div>
-            <Link href={`/tracker/${app.id}`} className="group flex items-center gap-2 w-fit">
+            <Link href={`/tracker/${app.slug}`} className="group flex items-center gap-2 w-fit">
               <p className="text-[16px] font-semibold mt-1 leading-tight group-hover:underline" style={{ color: 'var(--fg)' }}>{app.role}</p>
               <span className="font-mono text-[11px] mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--accent-primary)' }}>Open →</span>
             </Link>

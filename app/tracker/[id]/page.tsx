@@ -23,6 +23,7 @@ interface Contact {
 
 interface Application {
   id: number
+  slug: string
   company: string
   role: string
   url: string
