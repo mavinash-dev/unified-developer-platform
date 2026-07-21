@@ -105,6 +105,7 @@ function DashboardContent() {
   const [userLoaded, setUserLoaded] = useState(false)
   const searchParams = useSearchParams()
   const activeSkillId = searchParams.get('skill')
+  const activeSkillArgs = searchParams.get('args') ?? ''
 
   useEffect(() => {
     fetch('/api/skills').then(r => r.json()).then(setSkills).catch(() => {})
@@ -136,7 +137,7 @@ function DashboardContent() {
             <p className="text-[15px]" style={{ color: 'var(--fg-muted)' }}>{activeSkill.description}</p>
           )}
         </div>
-        <SkillRunner skillId={activeSkillId} description={activeSkill?.description} />
+        <SkillRunner skillId={activeSkillId} description={activeSkill?.description} defaultArgs={activeSkillArgs} />
       </div>
     )
   }

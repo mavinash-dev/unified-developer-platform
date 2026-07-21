@@ -162,6 +162,17 @@ export default function Sidebar() {
             Chat
           </Link>
           <Link
+            href="/tracker"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
+            style={{
+              background: pathname === '/tracker' ? 'rgba(168,85,247,0.12)' : 'transparent',
+              color: pathname === '/tracker' ? 'var(--accent-primary)' : 'var(--fg-body)',
+            }}
+          >
+            <span className="font-mono text-[11px] opacity-60">◈</span>
+            Tracker
+          </Link>
+          <Link
             href="/history"
             className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
             style={{

@@ -61,6 +61,34 @@ db.exec(`
     output TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS applications (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    company TEXT NOT NULL,
+    role TEXT NOT NULL,
+    url TEXT DEFAULT '',
+    status TEXT DEFAULT 'wishlist',
+    location TEXT DEFAULT '',
+    remote INTEGER DEFAULT 0,
+    salary_range TEXT DEFAULT '',
+    jd_summary TEXT DEFAULT '',
+    key_skills TEXT DEFAULT '[]',
+    notes TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
+
+  CREATE TABLE IF NOT EXISTS contacts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    application_id INTEGER NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
+    name TEXT NOT NULL,
+    title TEXT DEFAULT '',
+    company TEXT DEFAULT '',
+    linkedin_url TEXT DEFAULT '',
+    relationship TEXT DEFAULT 'referral',
+    notes TEXT DEFAULT '',
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `)
 
 export default db
