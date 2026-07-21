@@ -4,9 +4,28 @@ import path from 'path'
 import os from 'os'
 import { streamClaude } from '@/lib/claude-cli'
 import db from '@/lib/db'
+import { writeUDDContext, ensureContextFileRegistered } from '@/lib/generate-context'
+import { USER_FILE as CONFIG_FILE } from '@/lib/paths'
+
+interface ResumeTemplate { name: string; guidelines: string }
+
+function loadTemplateGuidelines(args: string): string {
+  const match = args.match(/\btemplate:([^\s]+)/)
+  if (!match) return ''
+  const slug = match[1].toLowerCase()
+  const row = db.prepare(
+    `SELECT name, guidelines FROM resume_templates WHERE lower(replace(name,' ','-')) LIKE ? OR lower(name) LIKE ? LIMIT 1`
+  ).get(`%${slug}%`, `%${slug.replace(/-/g, ' ')}%`) as ResumeTemplate | undefined
+  if (!row) return ''
+  return `[RESUME TEMPLATE: ${row.name}]\n${row.guidelines}\n[/RESUME TEMPLATE]\n\n`
+}
+
+// Refresh the UDD context snapshot before every skill run
+function refreshContext() {
+  try { ensureContextFileRegistered(); writeUDDContext() } catch { /* non-fatal */ }
+}
 
 const SKILLS_DIR = path.join(os.homedir(), '.claude', 'commands')
-const CONFIG_FILE = path.join(os.homedir(), '.udd', 'user.json')
 
 function buildContextPrefix(): string {
   try {
@@ -34,6 +53,8 @@ function buildContextPrefix(): string {
 }
 
 export async function POST(req: NextRequest) {
+  refreshContext()
+
   const { skill, args = '' } = await req.json()
 
   if (!skill) {
@@ -53,8 +74,10 @@ export async function POST(req: NextRequest) {
   const category = catMatch ? catMatch[1].trim() : ''
 
   let prompt = rawSkill.replace(/\$ARGUMENTS/g, args)
+  const templateBlock = loadTemplateGuidelines(args)
   const context = buildContextPrefix()
   if (context) prompt = context + prompt
+  if (templateBlock) prompt = templateBlock + prompt
 
   const encoder = new TextEncoder()
   let fullOutput = ''

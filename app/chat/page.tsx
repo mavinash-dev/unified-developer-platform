@@ -97,7 +97,7 @@ export default function ChatPage() {
       <div className="px-6 py-4 border-b shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="flex flex-col gap-0.5">
           <EyebrowLabel>Chat</EyebrowLabel>
-          <h1 className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>Ask Claude anything</h1>
+          <h1 className="text-sub-small" style={{ color: 'var(--fg)' }}>Ask Claude anything</h1>
         </div>
         {model && (
           <span className="font-mono text-[11px] px-2.5 py-1 rounded-full" style={{ color: 'var(--accent-blue)', background: 'rgba(61,157,255,0.1)' }}>
@@ -111,7 +111,7 @@ export default function ChatPage() {
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-4 opacity-50">
             <span className="font-mono text-[40px]">⚡</span>
-            <p className="font-mono text-[13px]" style={{ color: 'var(--fg-muted)' }}>
+            <p className="text-[14px] leading-relaxed text-center max-w-sm" style={{ color: 'var(--fg-muted)' }}>
               Start a conversation — use skills for structured tasks, chat for everything else
             </p>
           </div>

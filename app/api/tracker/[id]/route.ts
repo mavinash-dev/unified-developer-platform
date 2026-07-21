@@ -50,13 +50,13 @@ export async function POST(req: NextRequest, context: { params: Params }) {
   const body = await req.json()
 
   if (body._action === 'add_contact') {
-    const { name, title = '', company = '', linkedin_url = '', relationship = 'referral', notes = '' } = body
+    const { name, title = '', company = '', linkedin_url = '', email = '', phone = '', relationship = 'referral', notes = '' } = body
     if (!name?.trim()) return NextResponse.json({ error: 'name required' }, { status: 400 })
     const app = db.prepare(`SELECT company FROM applications WHERE id = ?`).get(id) as { company: string } | undefined
     const result = db.prepare(`
-      INSERT INTO contacts (application_id, name, title, company, linkedin_url, relationship, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?)
-    `).run(id, name.trim(), title, company || app?.company || '', linkedin_url, relationship, notes)
+      INSERT INTO contacts (application_id, name, title, company, linkedin_url, email, phone, relationship, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `).run(id, name.trim(), title, company || app?.company || '', linkedin_url, email, phone, relationship, notes)
     return NextResponse.json(db.prepare(`SELECT * FROM contacts WHERE id = ?`).get(result.lastInsertRowid), { status: 201 })
   }
 

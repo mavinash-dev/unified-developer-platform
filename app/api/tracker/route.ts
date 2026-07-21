@@ -32,17 +32,29 @@ export function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   const body = await req.json()
   const { company, role, url = '', status = 'wishlist', location = '', remote = false,
-    salary_range = '', jd_summary = '', key_skills = [], notes = '', contacts = [] } = body
+    salary_range = '', jd_summary = '', key_skills = [], notes = '', contacts = [],
+    source = 'manual', force = false } = body
 
   if (!company?.trim() || !role?.trim()) {
     return NextResponse.json({ error: 'company and role are required' }, { status: 400 })
   }
 
+  // Dedup check — same company + role already exists
+  if (!force) {
+    const existing = db.prepare(
+      `SELECT id, company, role, status, source FROM applications WHERE lower(company) = lower(?) AND lower(role) = lower(?)`
+    ).all(company.trim(), role.trim()) as { id: number; company: string; role: string; status: string; source: string }[]
+
+    if (existing.length > 0) {
+      return NextResponse.json({ duplicate: true, existing }, { status: 409 })
+    }
+  }
+
   const result = db.prepare(`
-    INSERT INTO applications (company, role, url, status, location, remote, salary_range, jd_summary, key_skills, notes)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    INSERT INTO applications (company, role, url, status, location, remote, salary_range, jd_summary, key_skills, notes, source)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(company.trim(), role.trim(), url, status, location, remote ? 1 : 0,
-    salary_range, jd_summary, JSON.stringify(key_skills), notes)
+    salary_range, jd_summary, JSON.stringify(key_skills), notes, source)
 
   const appId = result.lastInsertRowid
 

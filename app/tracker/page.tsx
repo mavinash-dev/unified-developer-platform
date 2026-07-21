@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import EyebrowLabel from '@/components/EyebrowLabel'
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -14,6 +15,8 @@ interface Contact {
   title: string
   company: string
   linkedin_url: string
+  email: string
+  phone: string
   relationship: 'referral' | 'recruiter' | 'hiring_manager' | 'connection'
   notes: string
 }
@@ -160,6 +163,18 @@ function ContactRow({ contact, appId, appCompany, appRole, onDeleted }: {
             {[contact.title, contact.company].filter(Boolean).join(' · ')}
           </span>
         )}
+        <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+          {contact.email && (
+            <a href={`mailto:${contact.email}`} className="font-mono text-[10px]" style={{ color: 'var(--accent-primary)' }}>
+              {contact.email}
+            </a>
+          )}
+          {contact.phone && (
+            <a href={`tel:${contact.phone}`} className="font-mono text-[10px]" style={{ color: 'var(--fg-muted)' }}>
+              {contact.phone}
+            </a>
+          )}
+        </div>
       </div>
       <div className="flex items-center gap-1.5 shrink-0">
         {contact.linkedin_url && (
@@ -193,6 +208,8 @@ function AddContactForm({ appId, onAdded }: { appId: number; onAdded: () => void
   const [name, setName] = useState('')
   const [title, setTitle] = useState('')
   const [linkedin, setLinkedin] = useState('')
+  const [email, setEmail] = useState('')
+  const [phone, setPhone] = useState('')
   const [rel, setRel] = useState<Contact['relationship']>('referral')
   const [saving, setSaving] = useState(false)
 
@@ -202,9 +219,9 @@ function AddContactForm({ appId, onAdded }: { appId: number; onAdded: () => void
     await fetch(`/api/tracker/${appId}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ _action: 'add_contact', name, title, linkedin_url: linkedin, relationship: rel }),
+      body: JSON.stringify({ _action: 'add_contact', name, title, linkedin_url: linkedin, email, phone, relationship: rel }),
     })
-    setName(''); setTitle(''); setLinkedin(''); setRel('referral')
+    setName(''); setTitle(''); setLinkedin(''); setEmail(''); setPhone(''); setRel('referral')
     setSaving(false)
     setOpen(false)
     onAdded()
@@ -222,19 +239,21 @@ function AddContactForm({ appId, onAdded }: { appId: number; onAdded: () => void
         <input className="dev-input flex-1 text-[13px]" placeholder="Name *" value={name} onChange={e => setName(e.target.value)} />
         <input className="dev-input flex-1 text-[13px]" placeholder="Title" value={title} onChange={e => setTitle(e.target.value)} />
       </div>
+      <input className="dev-input text-[13px]" placeholder="LinkedIn URL" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
       <div className="flex gap-2">
-        <input className="dev-input flex-1 text-[13px]" placeholder="LinkedIn URL" value={linkedin} onChange={e => setLinkedin(e.target.value)} />
-        <select
-          className="dev-input text-[13px]"
-          value={rel}
-          onChange={e => setRel(e.target.value as Contact['relationship'])}
-        >
-          <option value="referral">Referral</option>
-          <option value="recruiter">Recruiter</option>
-          <option value="hiring_manager">Hiring Manager</option>
-          <option value="connection">Connection</option>
-        </select>
+        <input className="dev-input flex-1 text-[13px]" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} />
+        <input className="dev-input flex-1 text-[13px]" placeholder="Phone" value={phone} onChange={e => setPhone(e.target.value)} />
       </div>
+      <select
+        className="dev-input text-[13px]"
+        value={rel}
+        onChange={e => setRel(e.target.value as Contact['relationship'])}
+      >
+        <option value="referral">Referral</option>
+        <option value="recruiter">Recruiter</option>
+        <option value="hiring_manager">Hiring Manager</option>
+        <option value="connection">Connection</option>
+      </select>
       <div className="flex gap-2">
         <button onClick={() => setOpen(false)} className="btn btn-sm btn-ghost flex-1">Cancel</button>
         <button onClick={save} disabled={!name.trim() || saving} className="btn btn-sm btn-primary flex-1">
@@ -247,6 +266,37 @@ function AddContactForm({ appId, onAdded }: { appId: number; onAdded: () => void
 
 // ── Application card ─────────────────────────────────────────────────────────
 
+function DeleteModal({ app, onConfirm, onCancel }: { app: Application; onConfirm: () => void; onCancel: () => void }) {
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-6"
+      style={{ background: 'rgba(8,15,17,0.85)', backdropFilter: 'blur(6px)' }}
+    >
+      <div
+        className="w-full max-w-sm rounded-[18px] p-7 flex flex-col gap-5"
+        style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}
+      >
+        <div className="flex flex-col gap-1">
+          <p className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>Delete this application?</p>
+          <p className="text-[14px] leading-relaxed" style={{ color: 'var(--fg-muted)' }}>
+            &ldquo;{app.role}&rdquo; at &ldquo;{app.company}&rdquo; will be permanently removed, including all contacts.
+          </p>
+        </div>
+        <div className="flex gap-3">
+          <button onClick={onCancel} className="btn btn-md btn-ghost flex-1">Keep it</button>
+          <button
+            onClick={onConfirm}
+            className="btn btn-md flex-1 font-semibold"
+            style={{ background: 'var(--destructive)', color: '#fff', border: 'none' }}
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AppCard({ app, onUpdated, onDeleted }: {
   app: Application
   onUpdated: (updated: Application) => void
@@ -256,6 +306,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
   const [expanded, setExpanded] = useState(false)
   const [editNotes, setEditNotes] = useState(false)
   const [notes, setNotes] = useState(app.notes)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
   const meta = statusMeta(app.status)
   const next = STATUS_NEXT[app.status]
 
@@ -279,7 +330,6 @@ function AppCard({ app, onUpdated, onDeleted }: {
   }
 
   const del = async () => {
-    if (!confirm(`Delete "${app.role} at ${app.company}"?`)) return
     await fetch(`/api/tracker/${app.id}`, { method: 'DELETE' })
     onDeleted(app.id)
   }
@@ -315,7 +365,10 @@ function AppCard({ app, onUpdated, onDeleted }: {
                 <span className="font-mono text-[10px]" style={{ color: 'var(--fg-muted)' }}>{app.salary_range}</span>
               )}
             </div>
-            <p className="text-[16px] font-semibold mt-1 leading-tight" style={{ color: 'var(--fg)' }}>{app.role}</p>
+            <Link href={`/tracker/${app.id}`} className="group flex items-center gap-2 w-fit">
+              <p className="text-[16px] font-semibold mt-1 leading-tight group-hover:underline" style={{ color: 'var(--fg)' }}>{app.role}</p>
+              <span className="font-mono text-[11px] mt-1 opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: 'var(--accent-primary)' }}>Open →</span>
+            </Link>
             <p className="text-[14px] font-medium" style={{ color: 'var(--fg-muted)' }}>
               {app.company}
               {app.location && <span className="font-normal"> · {app.location}</span>}
@@ -328,9 +381,10 @@ function AppCard({ app, onUpdated, onDeleted }: {
             <button onClick={() => setExpanded(p => !p)} className="btn btn-sm btn-ghost font-mono text-[12px]">
               {expanded ? '▲' : '▼'}
             </button>
-            <button onClick={del} className="btn btn-sm btn-ghost text-[11px]" style={{ color: 'var(--destructive)' }}>✕</button>
+            <button onClick={() => setDeleteConfirm(true)} className="btn btn-sm btn-ghost text-[11px]" style={{ color: 'var(--destructive)' }}>✕</button>
           </div>
         </div>
+        {deleteConfirm && <DeleteModal app={app} onConfirm={del} onCancel={() => setDeleteConfirm(false)} />}
 
         {/* Key skills */}
         {app.key_skills.length > 0 && (

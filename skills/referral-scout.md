@@ -97,3 +97,7 @@ At the end, output these lines exactly (they trigger action buttons in UDD):
 
 SKILL_ACTION: {"next": "cold-message", "label": "Write cold message for referral →"}
 SKILL_ACTION: {"next": "job-scout", "label": "Scout similar roles too →"}
+
+---
+
+**Reminder for the user**: Once you find a real contact on LinkedIn, open the job in your Tracker and add them (name, title, LinkedIn URL, email, phone). That saves them to your pipeline and lets you run /cold-message pre-filled from their card.

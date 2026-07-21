@@ -59,13 +59,13 @@ export default function Sidebar() {
     })
   }
 
-  // Drop zone is mobile-first — no sidebar
-  if (pathname === '/drop') return null
+  // Hide sidebar only when phone scans the QR (?mobile=1)
+  if (pathname === '/drop' && searchParams.get('mobile') === '1') return null
 
   if (collapsed) {
     return (
       <aside
-        className="flex flex-col items-center py-4 gap-3 shrink-0 border-r"
+        className="flex flex-col items-center py-4 gap-2 shrink-0 border-r"
         style={{
           width: 64,
           background: 'var(--surface)',
@@ -80,27 +80,27 @@ export default function Sidebar() {
         >
           ⚡
         </button>
-        <div className="w-6 h-px" style={{ background: 'var(--border-subtle)' }} />
+        <div className="w-6 h-px my-1" style={{ background: 'var(--border-subtle)' }} />
         <Link
           href="/"
-          className="w-10 h-10 rounded-[10px] flex items-center justify-center font-mono text-[11px] transition-colors"
+          className="w-10 h-10 rounded-[10px] flex items-center justify-center font-mono text-[13px] transition-colors"
           style={{
-            background: isNavActive('/') ? 'rgba(168,85,247,0.12)' : 'transparent',
+            background: isNavActive('/') ? 'rgba(168,85,247,0.15)' : 'transparent',
             color: isNavActive('/') ? 'var(--accent-primary)' : 'var(--fg-muted)',
           }}
           title="Dashboard"
         >
           ⊞
         </Link>
-        <div className="w-6 h-px" style={{ background: 'var(--border-subtle)' }} />
+        <div className="w-6 h-px my-1" style={{ background: 'var(--border-subtle)' }} />
         {skills.map(s => (
           <Link
             key={s.id}
             href={`/?skill=${s.id}`}
-            className="w-10 h-10 rounded-[10px] flex items-center justify-center font-mono text-[10px] font-medium transition-colors"
+            className="w-10 h-10 rounded-[10px] flex items-center justify-center font-mono text-[10px] font-semibold transition-colors"
             style={{
-              background: isSkillActive(s.id) ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: isSkillActive(s.id) ? 'var(--accent-primary)' : 'var(--fg-muted)',
+              background: isSkillActive(s.id) ? 'rgba(168,85,247,0.15)' : 'transparent',
+              color: isSkillActive(s.id) ? 'var(--accent-primary)' : '#6a7173',
             }}
             title={`/${s.id}`}
           >
@@ -125,9 +125,10 @@ export default function Sidebar() {
         className="flex items-center justify-between px-4 py-4 border-b shrink-0"
         style={{ borderColor: 'var(--border-subtle)' }}
       >
-        <span className="font-mono text-[13px] font-bold tracking-widest uppercase" style={{ color: 'var(--accent-primary)' }}>
-          ⚡ UDD
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-[14px] font-bold" style={{ color: 'var(--accent-primary)' }}>⚡</span>
+          <span className="font-mono text-[13px] font-bold tracking-widest uppercase" style={{ color: 'var(--fg)' }}>UDD</span>
+        </div>
         <button
           onClick={toggleCollapsed}
           className="w-7 h-7 rounded-[6px] flex items-center justify-center font-mono text-[12px] transition-colors hover:bg-white/5"
@@ -140,91 +141,126 @@ export default function Sidebar() {
 
       {/* Nav + Skills — scrollable */}
       <div className="flex-1 overflow-y-auto py-3">
+        {/* Section label */}
+        <p className="px-4 mb-1.5 font-mono text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--fg-muted)', opacity: 0.6 }}>
+          Navigate
+        </p>
+
         {/* Static nav */}
         <div className="px-3 pb-3 flex flex-col gap-0.5">
+          {[
+            { href: '/', icon: '⊞', label: 'Dashboard', active: isNavActive('/') },
+            { href: '/chat', icon: '◎', label: 'Chat', active: pathname === '/chat' && !activeSkill },
+            { href: '/tracker', icon: '◈', label: 'Tracker', active: pathname === '/tracker' },
+            { href: '/drop', icon: '⬇', label: 'Drop Zone', active: pathname === '/drop' && !searchParams.get('mobile') },
+            { href: '/history', icon: '⊙', label: 'History', active: pathname === '/history' },
+          ].map(item => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
+              style={{
+                background: item.active ? 'rgba(168,85,247,0.12)' : 'transparent',
+                color: item.active ? 'var(--accent-primary)' : 'var(--fg-muted)',
+                fontWeight: item.active ? 600 : 500,
+              }}
+            >
+              <span
+                className="font-mono text-[12px] w-4 text-center shrink-0"
+                style={{ color: item.active ? 'var(--accent-primary)' : '#6a7173' }}
+              >
+                {item.icon}
+              </span>
+              {item.label}
+            </Link>
+          ))}
+
+          {/* Resumes with sub-item */}
           <Link
-            href="/"
+            href="/resume"
             className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
             style={{
-              background: isNavActive('/') ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: isNavActive('/') ? 'var(--accent-primary)' : 'var(--fg-body)',
+              background: pathname === '/resume' ? 'rgba(168,85,247,0.12)' : 'transparent',
+              color: pathname === '/resume' ? 'var(--accent-primary)' : 'var(--fg-muted)',
+              fontWeight: pathname === '/resume' ? 600 : 500,
             }}
           >
-            <span className="font-mono text-[11px] opacity-60">⊞</span>
-            Dashboard
+            <span
+              className="font-mono text-[12px] w-4 text-center shrink-0"
+              style={{ color: pathname === '/resume' ? 'var(--accent-primary)' : '#6a7173' }}
+            >
+              ▤
+            </span>
+            Resumes
           </Link>
           <Link
-            href="/chat"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
+            href="/resume/templates"
+            className="flex items-center gap-1.5 pl-9 pr-3 py-1.5 rounded-[8px] text-[12px] transition-colors cursor-pointer hover:bg-white/5"
             style={{
-              background: pathname === '/chat' ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: pathname === '/chat' ? 'var(--accent-primary)' : 'var(--fg-body)',
+              background: pathname === '/resume/templates' ? 'rgba(168,85,247,0.08)' : 'transparent',
+              color: pathname === '/resume/templates' ? 'var(--accent-primary)' : '#6a7173',
             }}
           >
-            <span className="font-mono text-[11px] opacity-60">◎</span>
-            Chat
+            <span className="font-mono text-[10px]" style={{ color: '#6a7173' }}>↳</span>
+            <span>Templates</span>
           </Link>
-          <Link
-            href="/tracker"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
-            style={{
-              background: pathname === '/tracker' ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: pathname === '/tracker' ? 'var(--accent-primary)' : 'var(--fg-body)',
-            }}
-          >
-            <span className="font-mono text-[11px] opacity-60">◈</span>
-            Tracker
-          </Link>
-          <Link
-            href="/drop"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
-            style={{
-              background: pathname === '/drop' ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: pathname === '/drop' ? 'var(--accent-primary)' : 'var(--fg-body)',
-            }}
-          >
-            <span className="font-mono text-[11px] opacity-60">⬇</span>
-            Drop Zone
-          </Link>
-          <Link
-            href="/history"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
-            style={{
-              background: pathname === '/history' ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: pathname === '/history' ? 'var(--accent-primary)' : 'var(--fg-body)',
-            }}
-          >
-            <span className="font-mono text-[11px] opacity-60">⊙</span>
-            History
-          </Link>
+
           <Link
             href="/profile"
             className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
             style={{
               background: pathname === '/profile' ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: pathname === '/profile' ? 'var(--accent-primary)' : 'var(--fg-body)',
+              color: pathname === '/profile' ? 'var(--accent-primary)' : 'var(--fg-muted)',
+              fontWeight: pathname === '/profile' ? 600 : 500,
             }}
           >
-            <span className="font-mono text-[11px] opacity-60">◉</span>
+            <span
+              className="font-mono text-[12px] w-4 text-center shrink-0"
+              style={{ color: pathname === '/profile' ? 'var(--accent-primary)' : '#6a7173' }}
+            >
+              ◉
+            </span>
             Profile
+          </Link>
+          <Link
+            href="/tips"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
+            style={{
+              background: pathname === '/tips' ? 'rgba(168,85,247,0.12)' : 'transparent',
+              color: pathname === '/tips' ? 'var(--accent-primary)' : 'var(--fg-muted)',
+              fontWeight: pathname === '/tips' ? 600 : 500,
+            }}
+          >
+            <span
+              className="font-mono text-[12px] w-4 text-center shrink-0"
+              style={{ color: pathname === '/tips' ? 'var(--accent-primary)' : '#6a7173' }}
+            >
+              ?
+            </span>
+            Tips
           </Link>
         </div>
 
-        <div className="mx-3 mb-3 h-px" style={{ background: 'var(--border-subtle)' }} />
+        <div className="mx-3 mb-2 h-px" style={{ background: 'var(--border-subtle)' }} />
+
+        {/* Skills section label */}
+        <p className="px-4 mb-1.5 font-mono text-[10px] font-semibold tracking-widest uppercase" style={{ color: 'var(--fg-muted)', opacity: 0.6 }}>
+          Skills
+        </p>
 
         {/* Skill categories */}
         {Object.entries(grouped).map(([cat, catSkills]) => {
           const isCatCollapsed = collapsedCategories.has(cat)
           return (
-            <div key={cat} className="px-3 mb-2">
+            <div key={cat} className="px-3 mb-1">
               <button
                 onClick={() => toggleCategory(cat)}
-                className="w-full flex items-center justify-between px-1 py-1.5 mb-1 cursor-pointer"
+                className="w-full flex items-center justify-between px-2 py-1 mb-0.5 cursor-pointer rounded-[6px] hover:bg-white/5"
               >
-                <span className="font-mono text-[10px] font-medium tracking-widest uppercase" style={{ color: 'var(--fg-muted)' }}>
+                <span className="font-mono text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#6a7173' }}>
                   {cat}
                 </span>
-                <span className="font-mono text-[10px]" style={{ color: 'var(--fg-muted)' }}>
+                <span className="font-mono text-[9px]" style={{ color: '#6a7173' }}>
                   {isCatCollapsed ? '▸' : '▾'}
                 </span>
               </button>
@@ -235,19 +271,26 @@ export default function Sidebar() {
                     <Link
                       key={s.id}
                       href={`/?skill=${s.id}`}
-                      className="flex items-center gap-2 px-3 py-2 rounded-[8px] text-[13px] transition-colors group cursor-pointer hover:bg-white/5"
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] transition-colors group cursor-pointer hover:bg-white/5"
                       style={{
                         background: isSkillActive(s.id) ? 'rgba(168,85,247,0.12)' : 'transparent',
-                        color: isSkillActive(s.id) ? 'var(--accent-primary)' : 'var(--fg-body)',
                       }}
                     >
                       <span
-                        className="font-mono text-[11px] shrink-0 transition-colors"
-                        style={{ color: isSkillActive(s.id) ? 'var(--accent-primary)' : 'var(--fg-muted)' }}
+                        className="font-mono text-[12px] shrink-0 font-semibold"
+                        style={{ color: 'var(--accent-primary)' }}
                       >
                         /
                       </span>
-                      <span className="truncate">{s.id}</span>
+                      <span
+                        className="font-mono text-[12px] truncate"
+                        style={{
+                          color: isSkillActive(s.id) ? 'var(--accent-primary)' : 'var(--fg-body)',
+                          fontWeight: isSkillActive(s.id) ? 600 : 400,
+                        }}
+                      >
+                        {s.id}
+                      </span>
                     </Link>
                   ))}
                 </div>
@@ -265,13 +308,13 @@ export default function Sidebar() {
 
       {/* Token bar at bottom */}
       {tokens && (
-        <div className="border-t px-4 py-3 shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
+        <div className="border-t px-4 py-3 shrink-0" style={{ borderColor: 'var(--border-subtle)', background: 'var(--elevated)' }}>
           <div className="flex justify-between items-center">
-            <span className="font-mono text-[10px] font-medium tracking-widest uppercase" style={{ color: 'var(--fg-muted)' }}>
-              Today
+            <span className="font-mono text-[10px] font-semibold tracking-widest uppercase" style={{ color: '#6a7173' }}>
+              Tokens today
             </span>
-            <span className="font-mono text-[11px]" style={{ color: 'var(--accent-primary)' }}>
-              {fmt(tokens.daily.total)} tokens
+            <span className="font-mono text-[12px] font-semibold" style={{ color: 'var(--accent-primary)' }}>
+              {fmt(tokens.daily.total)}
             </span>
           </div>
         </div>

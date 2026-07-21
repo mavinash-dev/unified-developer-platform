@@ -1,42 +1,110 @@
 #!/usr/bin/env bash
-# Links skills from this repo into ~/.claude/commands/ so Claude Code picks them up.
-# Uses symlinks — git pull automatically updates skills without re-running this script.
-set -euo pipefail
+set -e
 
-REPO_DIR="$(cd "$(dirname "$0")" && pwd)"
-SKILLS_DIR="$HOME/.claude/commands"
-SKILLS_SRC="$REPO_DIR/skills"
+REPO="https://github.com/mavinash-dev/unified-developer-platform"
+DIR="unified-developer-platform"
+MODE="${1:-install}"   # install | --update | --clean
 
-if [ ! -d "$SKILLS_SRC" ]; then
-  echo "Error: $SKILLS_SRC not found. Are you running from the repo root?" >&2
-  exit 1
+print_banner() {
+  echo ""
+  echo "  ██╗   ██╗██████╗ ██████╗ "
+  echo "  ██║   ██║██╔══██╗██╔══██╗"
+  echo "  ██║   ██║██║  ██║██║  ██║"
+  echo "  ██║   ██║██║  ██║██║  ██║"
+  echo "  ╚██████╔╝██████╔╝██████╔╝"
+  echo "   ╚═════╝ ╚═════╝ ╚═════╝   Unified Developer Dashboard"
+  echo ""
+  echo "  Built by Avinash · mavinash.dev@gmail.com"
+  echo "  $REPO"
+  echo ""
+}
+
+# ── Update ────────────────────────────────────────────────────────────────────
+if [ "$MODE" = "--update" ]; then
+  print_banner
+  echo "→  Pulling latest changes …"
+  git pull --ff-only
+  echo "→  Syncing dependencies …"
+  npm install --silent
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  ✓  Updated. Restart the dev server to apply changes:"
+  echo ""
+  echo "     npm run dev"
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  exit 0
 fi
 
-mkdir -p "$SKILLS_DIR"
-echo "Linking skills: $SKILLS_SRC → $SKILLS_DIR"
-echo ""
-
-linked=0
-skipped=0
-
-for skill in "$SKILLS_SRC"/*.md; do
-  [ -f "$skill" ] || continue
-  name="$(basename "$skill")"
-  target="$SKILLS_DIR/$name"
-
-  if [ -e "$target" ] && [ ! -L "$target" ]; then
-    echo "  ⚠  $name — already exists (not a symlink). Remove it manually to replace:"
-    echo "     rm \"$target\""
-    skipped=$((skipped + 1))
-  else
-    ln -sf "$skill" "$target"
-    echo "  ✓  $name"
-    linked=$((linked + 1))
+# ── Clean ─────────────────────────────────────────────────────────────────────
+if [ "$MODE" = "--clean" ]; then
+  print_banner
+  echo "⚠️   CLEAN will permanently delete:"
+  echo "     • data/career.db        (all applications, resumes, contacts, sessions)"
+  echo "     • data/udd/               (your profile and context snapshot)"
+  echo ""
+  echo "    The app code and your installed skills are NOT touched."
+  echo ""
+  printf "    Type YES to confirm: "
+  read -r CONFIRM
+  if [ "$CONFIRM" != "YES" ]; then
+    echo "  Cancelled — nothing was deleted."
+    exit 0
   fi
-done
+  echo ""
+  echo "→  Deleting data/career.db …"
+  rm -f data/career.db
+  echo "→  Deleting data/udd/ …"
+  rm -rf "data/udd"
+  echo ""
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo "  ✓  Clean complete. Fresh start on next npm run dev."
+  echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+  echo ""
+  exit 0
+fi
+
+# ── Install (default) ─────────────────────────────────────────────────────────
+print_banner
+
+if ! command -v node &>/dev/null; then
+  echo "❌  Node.js not found. Install from https://nodejs.org (v18+) and re-run."
+  exit 1
+fi
+NODE_VER=$(node -e "process.stdout.write(process.versions.node)")
+echo "✓  Node $NODE_VER"
+
+if ! command -v claude &>/dev/null; then
+  echo ""
+  echo "⚠️   Claude CLI not found — install it first:"
+  echo "     npm install -g @anthropic-ai/claude-code"
+  echo "    Then re-run this script."
+  exit 1
+fi
+echo "✓  Claude CLI found"
+
+if [ -d "$DIR" ]; then
+  echo "✓  Repo already cloned at ./$DIR — pulling latest"
+  git -C "$DIR" pull --ff-only
+else
+  echo "→  Cloning $REPO …"
+  git clone "$REPO" "$DIR"
+fi
+
+cd "$DIR"
+echo "→  Installing dependencies …"
+npm install --silent
+mkdir -p data
 
 echo ""
-echo "$linked skill(s) linked, $skipped skipped."
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo "  ✓  All done. Start the dashboard:"
 echo ""
-echo "Skills update automatically on 'git pull' — no need to re-run setup."
-echo "Start the dashboard: npm run dev"
+echo "     cd $DIR && npm run dev"
+echo ""
+echo "  Then open: http://localhost:3004"
+echo ""
+echo "  Later: ./setup.sh --update   pull latest changes"
+echo "         ./setup.sh --clean    wipe your data and start fresh"
+echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+echo ""

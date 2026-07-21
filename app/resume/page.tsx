@@ -27,6 +27,14 @@ export default function ResumePage() {
           </Link>{' '}
           skill.
         </p>
+        <div className="flex gap-3 mt-2">
+          <Link href="/?skill=resume-update" className="btn btn-md btn-primary text-[13px]">
+            ⚡ Build a resume
+          </Link>
+          <Link href="/resume/templates" className="btn btn-md btn-ghost text-[13px]">
+            Browse templates →
+          </Link>
+        </div>
       </header>
 
       <hr className="border-t mx-6" style={{ borderColor: 'var(--border-subtle)' }} />

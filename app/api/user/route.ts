@@ -1,10 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import fs from 'fs'
-import path from 'path'
-import os from 'os'
-
-const CONFIG_DIR = path.join(os.homedir(), '.udd')
-const CONFIG_FILE = path.join(CONFIG_DIR, 'user.json')
+import { UDD_DIR as CONFIG_DIR, USER_FILE as CONFIG_FILE } from '@/lib/paths'
 
 interface UserConfig {
   name: string

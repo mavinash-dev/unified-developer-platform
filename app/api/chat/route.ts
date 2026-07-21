@@ -3,8 +3,7 @@ import { streamClaude } from '@/lib/claude-cli'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
-
-const CONFIG_FILE = path.join(os.homedir(), '.udd', 'user.json')
+import { USER_FILE as CONFIG_FILE } from '@/lib/paths'
 
 interface Message { role: 'user' | 'assistant'; content: string }
 
