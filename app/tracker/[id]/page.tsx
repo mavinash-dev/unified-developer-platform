@@ -237,13 +237,28 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [editDetails, setEditDetails] = useState(false)
+  const [editForm, setEditForm] = useState({ company: '', role: '', url: '', location: '', salary_range: '', remote: false })
 
   useEffect(() => {
     fetch(`/api/tracker/${id}`).then(r => r.json()).then(d => {
       setApp(d)
       setNotes(d.notes ?? '')
+      setEditForm({ company: d.company, role: d.role, url: d.url ?? '', location: d.location ?? '', salary_range: d.salary_range ?? '', remote: !!d.remote })
     })
   }, [id])
+
+  const saveDetails = async () => {
+    setSaving(true)
+    const res = await fetch(`/api/tracker/${app!.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(editForm),
+    })
+    setApp(await res.json())
+    setSaving(false)
+    setEditDetails(false)
+  }
 
   if (!app) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--canvas)' }}>
@@ -298,7 +313,12 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
           </Link>
         </div>
 
-        <EyebrowLabel>{app.company}</EyebrowLabel>
+        <div className="flex items-center justify-between">
+          <EyebrowLabel>{app.company}</EyebrowLabel>
+          <button onClick={() => setEditDetails(true)} className="btn btn-sm btn-ghost font-mono text-[12px]" style={{ color: 'var(--fg-muted)' }}>
+            ✎ Edit details
+          </button>
+        </div>
         <h1 className="text-sub-large mt-2" style={{ color: 'var(--fg)', lineHeight: 1.1 }}>{app.role}</h1>
 
         <div className="flex items-center gap-3 mt-4 flex-wrap">
@@ -418,6 +438,51 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
           </div>
         </div>
       </main>
+
+      {/* Edit details modal */}
+      {editDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6" style={{ background: 'rgba(8,15,17,0.85)', backdropFilter: 'blur(6px)' }}>
+          <div className="w-full max-w-md rounded-[18px] p-7 flex flex-col gap-5" style={{ background: 'var(--surface)', border: '1px solid var(--border-default)' }}>
+            <p className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>Edit details</p>
+            <div className="flex flex-col gap-3">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>Company</label>
+                  <input className="dev-input text-[13px]" value={editForm.company} onChange={e => setEditForm(f => ({ ...f, company: e.target.value }))} />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>Role</label>
+                  <input className="dev-input text-[13px]" value={editForm.role} onChange={e => setEditForm(f => ({ ...f, role: e.target.value }))} />
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>Job posting URL</label>
+                <input className="dev-input text-[13px]" type="url" placeholder="https://jobs.apple.com/…" value={editForm.url} onChange={e => setEditForm(f => ({ ...f, url: e.target.value }))} />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>Location</label>
+                  <input className="dev-input text-[13px]" placeholder="San Francisco, CA" value={editForm.location} onChange={e => setEditForm(f => ({ ...f, location: e.target.value }))} />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>Salary range</label>
+                  <input className="dev-input text-[13px]" placeholder="$180K–$220K" value={editForm.salary_range} onChange={e => setEditForm(f => ({ ...f, salary_range: e.target.value }))} />
+                </div>
+              </div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="checkbox" checked={editForm.remote} onChange={e => setEditForm(f => ({ ...f, remote: e.target.checked }))} />
+                <span className="font-mono text-[12px]" style={{ color: 'var(--fg-muted)' }}>Remote role</span>
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <button onClick={() => setEditDetails(false)} className="btn btn-md btn-ghost flex-1">Cancel</button>
+              <button onClick={saveDetails} disabled={saving || !editForm.company.trim() || !editForm.role.trim()} className="btn btn-md btn-primary flex-1">
+                {saving ? 'Saving…' : 'Save'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Delete confirm modal */}
       {deleteConfirm && (
