@@ -1,6 +1,26 @@
 'use client'
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
+import React from 'react'
+
+function linkifyOutput(text: string): React.ReactNode[] {
+  const urlRegex = /https?:\/\/[^\s\])"'>]+/g
+  const parts: React.ReactNode[] = []
+  let last = 0
+  let match: RegExpExecArray | null
+  while ((match = urlRegex.exec(text)) !== null) {
+    if (match.index > last) parts.push(text.slice(last, match.index))
+    parts.push(
+      <a key={match.index} href={match[0]} target="_blank" rel="noopener noreferrer"
+        style={{ color: 'var(--accent-blue)', textDecoration: 'underline', wordBreak: 'break-all' }}>
+        {match[0]}
+      </a>
+    )
+    last = match.index + match[0].length
+  }
+  if (last < text.length) parts.push(text.slice(last))
+  return parts
+}
 
 interface Props {
   skillId: string
@@ -171,7 +191,7 @@ export default function SkillRunner({ skillId, description, defaultArgs = '' }: 
         {!output && isRunning && (
           <span style={{ color: 'var(--accent-primary)' }}>Running /{skillId}…</span>
         )}
-        {output && <pre className="whitespace-pre-wrap" style={{ color: 'var(--fg-body)' }}>{output}</pre>}
+        {output && <pre className="whitespace-pre-wrap" style={{ color: 'var(--fg-body)' }}>{linkifyOutput(output)}</pre>}
         {isRunning && (
           <span className="inline-block w-2 h-4 ml-0.5 align-middle animate-pulse" style={{ background: 'var(--accent-primary)', opacity: 0.8 }} />
         )}
@@ -183,20 +203,27 @@ export default function SkillRunner({ skillId, description, defaultArgs = '' }: 
             {status === 'error' && (
               <span className="font-mono text-[12px]" style={{ color: 'var(--destructive)' }}>✗ exited with error</span>
             )}
-            {skillActions.length > 0 && (
-              <div className="flex flex-wrap gap-2 mt-1">
-                {skillActions.map(action => (
-                  <button
-                    key={action.next}
-                    onClick={() => router.push(`/?skill=${action.next}`)}
-                    className="btn btn-sm btn-secondary"
-                    style={{ fontFamily: 'var(--font-geist-mono)' }}
-                  >
-                    → {action.label}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="flex flex-wrap gap-2 mt-1">
+              {status === 'done' && output && (
+                <button
+                  onClick={() => router.push(`/chat?context=${encodeURIComponent(output)}`)}
+                  className="btn btn-sm btn-secondary"
+                  style={{ fontFamily: 'var(--font-geist-mono)' }}
+                >
+                  💬 Continue in Chat →
+                </button>
+              )}
+              {skillActions.map(action => (
+                <button
+                  key={action.next}
+                  onClick={() => router.push(`/?skill=${action.next}`)}
+                  className="btn btn-sm btn-secondary"
+                  style={{ fontFamily: 'var(--font-geist-mono)' }}
+                >
+                  → {action.label}
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>

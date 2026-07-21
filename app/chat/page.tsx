@@ -1,5 +1,6 @@
 'use client'
-import { useState, useRef, useEffect, useCallback } from 'react'
+import { useState, useRef, useEffect, useCallback, Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import EyebrowLabel from '@/components/EyebrowLabel'
@@ -7,8 +8,12 @@ import Spinner from '@/components/Spinner'
 
 interface Message { role: 'user' | 'assistant'; content: string; model?: string }
 
-export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([])
+function ChatInner() {
+  const searchParams = useSearchParams()
+  const contextParam = searchParams.get('context')
+  const [messages, setMessages] = useState<Message[]>(() =>
+    contextParam ? [{ role: 'assistant', content: contextParam }] : []
+  )
   const [input, setInput] = useState('')
   const [streaming, setStreaming] = useState(false)
   const [model, setModel] = useState('')
@@ -117,6 +122,12 @@ export default function ChatPage() {
 
       {/* Messages */}
       <div className="flex-1 overflow-y-auto px-6 py-6 flex flex-col gap-6">
+        {contextParam && messages.length > 0 && (
+          <div className="flex items-center gap-2 px-4 py-2 rounded-[10px] border text-[12px] font-mono shrink-0" style={{ borderColor: 'var(--accent-blue)', color: 'var(--accent-blue)', background: 'rgba(61,157,255,0.07)' }}>
+            <span>⟳</span>
+            <span>Skill output loaded as context — ask a follow-up question below</span>
+          </div>
+        )}
         {messages.length === 0 && (
           <div className="flex flex-col items-center justify-center h-full gap-4 opacity-50">
             <span className="font-mono text-[40px]">⚡</span>
@@ -211,5 +222,13 @@ export default function ChatPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+export default function ChatPage() {
+  return (
+    <Suspense fallback={<div className="h-screen" style={{ background: 'var(--canvas)' }} />}>
+      <ChatInner />
+    </Suspense>
   )
 }
