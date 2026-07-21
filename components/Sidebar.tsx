@@ -59,6 +59,9 @@ export default function Sidebar() {
     })
   }
 
+  // Drop zone is mobile-first — no sidebar
+  if (pathname === '/drop') return null
+
   if (collapsed) {
     return (
       <aside
