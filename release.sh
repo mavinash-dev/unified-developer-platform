@@ -67,17 +67,26 @@ if ! grep -q "VERSION = '${NEXT}'" lib/version.ts; then
   exit 1
 fi
 
-# Commit, tag, and push
-git add lib/version.ts
-git commit -m "release: ${NEXT}"
+# Tag and push — no file changes needed, version is derived from tags at runtime
 git tag "${NEXT}"
-git push
 git push --tags
 
-echo ""
-echo "  ✓ Released ${NEXT}"
+# Create GitHub release if gh is available
+RELEASE_NOTES="UDD ${NEXT}"
+if [[ -n "$PREV" ]]; then
+  RELEASE_NOTES="UDD ${NEXT} — follows ${PREV}"
+fi
+
+if command -v gh &>/dev/null; then
+  gh release create "${NEXT}" --title "UDD ${NEXT}" --notes "${RELEASE_NOTES}"
+  echo ""
+  echo "  ✓ Released ${NEXT} — live on GitHub Releases"
+else
+  echo ""
+  echo "  ✓ Tag pushed. Install 'gh' CLI to auto-create GitHub Releases."
+fi
+
 if [[ -n "$PREV" ]]; then
   echo "  ${PREV} → ${NEXT}"
 fi
-echo "  Tag: ${NEXT} — pushed to origin"
 echo ""
