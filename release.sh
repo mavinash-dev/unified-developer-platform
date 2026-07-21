@@ -58,16 +58,7 @@ if [[ "$CONFIRM" != "y" && "$CONFIRM" != "Y" ]]; then
   exit 0
 fi
 
-# Update lib/version.ts
-sed -i '' "s/^export const VERSION = '[^']*'/export const VERSION = '${NEXT}'/" lib/version.ts
-
-# Verify
-if ! grep -q "VERSION = '${NEXT}'" lib/version.ts; then
-  echo "✗ Failed to update lib/version.ts"
-  exit 1
-fi
-
-# Tag and push — no file changes needed, version is derived from tags at runtime
+# Tag and push — version is derived from tags at runtime, no file changes needed
 git tag "${NEXT}"
 git push --tags
 
