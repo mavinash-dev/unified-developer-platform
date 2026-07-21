@@ -582,12 +582,13 @@ function VersionBadge({ version, next }: { version: string | null; next: string 
     <div className="flex items-center gap-3 shrink-0">
       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px]"
         style={{ background: 'rgba(168,85,247,0.15)', border: '1px solid rgba(168,85,247,0.35)' }}>
-        <span className="text-[18px] leading-none" style={{ color: 'var(--accent-primary)' }}>{sym}</span>
+        <span className="text-[20px] leading-none font-semibold" style={{ color: 'var(--accent-primary)' }}>{sym}</span>
         <span className="font-mono text-[12px] font-semibold" style={{ color: 'var(--accent-primary)' }}>{version}</span>
       </div>
       {next && (
-        <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: 'var(--fg-muted)', opacity: 0.55 }}>
-          <span>↑ up next: {greekSymbol(next)} {next}</span>
+        <div className="flex items-center gap-1.5 text-[11px] font-mono" style={{ color: 'var(--fg-muted)', opacity: 0.4 }}>
+          <span className="text-[15px] leading-none">{greekSymbol(next)}</span>
+          <span>{next}</span>
         </div>
       )}
     </div>
