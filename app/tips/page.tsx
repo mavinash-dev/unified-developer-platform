@@ -152,6 +152,12 @@ const CALLOUTS: Callout[] = [
     link: { href: '/tracker', label: 'Open Tracker →' },
   },
   {
+    icon: '🔍',
+    title: '/find-job-url — recover the posting link from a screenshot drop',
+    body: 'When a job is added from a screenshot or image, the original URL is often missing. Open the job in Tracker — if there\'s no URL saved, a banner appears with a "Find job posting →" button. It runs /find-job-url pre-filled with company, role and location, then searches LinkedIn, Greenhouse, Lever and the company\'s careers page to find the live link. Paste it back via Edit details.',
+    link: { href: '/tracker', label: 'Open Tracker →' },
+  },
+  {
     icon: '✦',
     title: 'The home greeting is generated live',
     body: 'Every time you load the dashboard, Claude writes a 1–2 sentence subtitle from your live tracker data — actual companies, statuses, and recent activity. New installs get a static welcome. Once you have applications, the subtitle references them specifically. "offer" highlights green, "interview" amber, "skills" violet.',

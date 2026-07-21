@@ -233,6 +233,7 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
   const { id } = use(params)
   const router = useRouter()
   const [app, setApp] = useState<Application | null>(null)
+  const [notFound, setNotFound] = useState(false)
   const [editNotes, setEditNotes] = useState(false)
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
@@ -241,7 +242,11 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
   const [editForm, setEditForm] = useState({ company: '', role: '', url: '', location: '', salary_range: '', remote: false })
 
   useEffect(() => {
-    fetch(`/api/tracker/${id}`).then(r => r.json()).then(d => {
+    fetch(`/api/tracker/${id}`).then(r => {
+      if (r.status === 404) { setNotFound(true); return null }
+      return r.json()
+    }).then(d => {
+      if (!d) return
       setApp(d)
       setNotes(d.notes ?? '')
       setEditForm({ company: d.company, role: d.role, url: d.url ?? '', location: d.location ?? '', salary_range: d.salary_range ?? '', remote: !!d.remote })
@@ -259,6 +264,14 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
     setSaving(false)
     setEditDetails(false)
   }
+
+  if (notFound) return (
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4" style={{ background: 'var(--canvas)' }}>
+      <p className="text-[18px] font-semibold" style={{ color: 'var(--fg)' }}>Application not found</p>
+      <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>It may have been deleted.</p>
+      <Link href="/tracker" className="btn btn-md btn-primary">← Back to tracker</Link>
+    </div>
+  )
 
   if (!app) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--canvas)' }}>
@@ -303,7 +316,7 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
   const tailorArgs   = `Tailor resume for ${app.role} at ${app.company}${app.jd_summary ? `. JD summary: ${app.jd_summary}` : ''}${app.key_skills.length ? `. Key skills: ${app.key_skills.join(', ')}` : ''}`
   const scoutArgs    = `${app.role} at ${app.company}${app.location ? ` (${app.location})` : ''}${app.jd_summary ? `. Role: ${app.jd_summary}` : ''}`
   const findUrlArgs  = `${app.role} at ${app.company}${app.location ? `, ${app.location}` : ''}`
-  const isIncomplete = !app.url && (!app.jd_summary || app.jd_summary.length < 30)
+  const isIncomplete = !app.url
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--canvas)' }}>
@@ -373,9 +386,9 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
           <div className="flex items-start gap-4 rounded-[14px] px-5 py-4" style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.25)' }}>
             <span className="text-[20px] shrink-0">⚠️</span>
             <div className="flex flex-col gap-2 flex-1 min-w-0">
-              <p className="text-[14px] font-semibold" style={{ color: 'var(--fg)' }}>Job details incomplete</p>
+              <p className="text-[14px] font-semibold" style={{ color: 'var(--fg)' }}>No job posting URL saved</p>
               <p className="text-[13px] leading-relaxed" style={{ color: 'var(--fg-muted)' }}>
-                This was added from an image — no job description or URL was found. Use the skill below to find the original posting, then paste the URL in Edit details.
+                Find the original posting link, then paste it via Edit details. The skill below searches LinkedIn, Greenhouse, Lever and the company careers page.
               </p>
               <button
                 onClick={() => router.push(`/?skill=find-job-url&args=${encodeURIComponent(findUrlArgs)}`)}
