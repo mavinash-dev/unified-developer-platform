@@ -10,7 +10,7 @@ const SEQUENCE: string[] = [
   ...GREEK.flatMap(a => GREEK.map(b => `${a}-${b}`)),
 ]
 
-export const VERSION = 'delta'
+export const VERSION = 'alpha'
 
 const idx = SEQUENCE.indexOf(VERSION)
 export const PREV = idx > 0 ? SEQUENCE[idx - 1] : null
