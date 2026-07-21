@@ -130,7 +130,7 @@ export default function DropPage() {
                 <span className="text-[36px]">📸</span>
                 <div className="flex flex-col gap-0.5">
                   <p className="text-[17px] font-semibold" style={{ color: 'var(--fg)' }}>Screenshot</p>
-                  <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>Photo from camera roll or Files</p>
+                  <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>OCR via Apple Vision / Windows WinRT — zero tokens</p>
                 </div>
               </button>
 
@@ -206,26 +206,13 @@ export default function DropPage() {
               </div>
             )}
 
-            {stage === 'error' && error.includes('ANTHROPIC_API_KEY') && (
-              <div className="flex flex-col gap-4 rounded-[14px] p-5" style={{ background: 'rgba(245,158,11,0.1)', border: '1px solid rgba(245,158,11,0.3)' }}>
-                <p className="text-[15px] font-semibold" style={{ color: '#f59e0b' }}>Screenshot parsing needs an API key</p>
-                <p className="text-[13px]" style={{ color: 'var(--fg-body)' }}>
-                  Add <code className="font-mono px-1 rounded" style={{ background: 'var(--elevated)' }}>ANTHROPIC_API_KEY=sk-ant-...</code> to{' '}
-                  <code className="font-mono">.env.local</code> in the UDD project and restart the server.
-                </p>
-                <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
-                  You can still add the job via URL or pasted text — those use the Claude CLI you already have.
-                </p>
-                <button onClick={() => { setMode('url'); setStage('idle') }} className="btn btn-md btn-primary w-full mt-1">
-                  Try with URL instead →
-                </button>
-              </div>
-            )}
-
-            {stage === 'error' && !error.includes('ANTHROPIC_API_KEY') && (
+            {stage === 'error' && (
               <div className="flex flex-col gap-3">
                 <p className="text-[14px]" style={{ color: 'var(--destructive)' }}>{error}</p>
                 <button onClick={() => { setStage('idle'); setPreview(null) }} className="btn btn-md btn-ghost w-full">Try again</button>
+                <button onClick={() => { setMode('url'); setStage('idle') }} className="btn btn-md btn-primary w-full">
+                  Try with URL instead →
+                </button>
               </div>
             )}
           </>

@@ -71,7 +71,6 @@ function statusMeta(s: Status) {
 
 function PhoneDropPanel() {
   const [dropUrl, setDropUrl] = useState('')
-  const [hasVision, setHasVision] = useState(false)
   const [qrDataUrl, setQrDataUrl] = useState('')
   const [open, setOpen] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -79,7 +78,6 @@ function PhoneDropPanel() {
   useEffect(() => {
     fetch('/api/local-ip').then(r => r.json()).then(async (data) => {
       setDropUrl(data.dropUrl)
-      setHasVision(data.hasVision)
       const url = await QRCode.toDataURL(data.dropUrl, { width: 160, margin: 1, color: { dark: '#fdfcf0', light: '#0e1518' } })
       setQrDataUrl(url)
     })
@@ -103,8 +101,8 @@ function PhoneDropPanel() {
         <div className="flex flex-col gap-2">
           <p className="text-[15px] font-semibold" style={{ color: 'var(--fg)' }}>Add from phone or tablet</p>
           <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
-            Scan the QR code on any device on the same WiFi — paste a URL, job description,{' '}
-            {hasVision ? 'or upload a screenshot.' : 'or text. (Enable screenshot parsing by adding ANTHROPIC_API_KEY to .env.local)'}
+            Scan on any device on the same WiFi — paste a URL, job description, or upload a screenshot.
+            OCR runs locally via Apple Vision (Mac) or Windows WinRT — zero tokens.
           </p>
           <div className="flex items-center gap-2 mt-1">
             <code className="font-mono text-[12px] px-2 py-1 rounded-[6px]" style={{ background: 'var(--elevated)', color: 'var(--accent-primary)' }}>
@@ -118,11 +116,6 @@ function PhoneDropPanel() {
               copy
             </button>
           </div>
-          {!hasVision && (
-            <p className="font-mono text-[11px] px-2 py-1 rounded-[6px] self-start" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
-              ⚠ Screenshot mode needs ANTHROPIC_API_KEY in .env.local
-            </p>
-          )}
         </div>
         {qrDataUrl && (
           <div className="shrink-0">
@@ -358,6 +351,7 @@ function AppCard({ app, onUpdated, onDeleted }: {
   }
 
   const tailorArgs = `Tailor resume for ${app.role} at ${app.company}${app.jd_summary ? `. JD summary: ${app.jd_summary}` : ''}${app.key_skills.length ? `. Key skills: ${app.key_skills.join(', ')}` : ''}`
+  const referralScoutArgs = `${app.role} at ${app.company}${app.location ? ` (${app.location})` : ''}${app.jd_summary ? `. Role: ${app.jd_summary}` : ''}`
 
   const reloadContacts = async () => {
     const res = await fetch(`/api/tracker/${app.id}`)
@@ -425,6 +419,12 @@ function AppCard({ app, onUpdated, onDeleted }: {
               Mark as {statusMeta(next).label} →
             </button>
           )}
+          <button
+            onClick={() => router.push(`/?skill=referral-scout&args=${encodeURIComponent(referralScoutArgs)}`)}
+            className="btn btn-sm btn-ghost text-[12px]"
+          >
+            🔍 Scout referrals
+          </button>
           <button
             onClick={() => router.push(`/?skill=resume-update&args=${encodeURIComponent(tailorArgs)}`)}
             className="btn btn-sm btn-ghost text-[12px]"

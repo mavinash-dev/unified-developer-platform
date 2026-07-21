@@ -183,6 +183,17 @@ export default function Sidebar() {
             <span className="font-mono text-[11px] opacity-60">⊙</span>
             History
           </Link>
+          <Link
+            href="/profile"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
+            style={{
+              background: pathname === '/profile' ? 'rgba(168,85,247,0.12)' : 'transparent',
+              color: pathname === '/profile' ? 'var(--accent-primary)' : 'var(--fg-body)',
+            }}
+          >
+            <span className="font-mono text-[11px] opacity-60">◉</span>
+            Profile
+          </Link>
         </div>
 
         <div className="mx-3 mb-3 h-px" style={{ background: 'var(--border-subtle)' }} />
