@@ -5,6 +5,9 @@ import { useRouter, useSearchParams } from 'next/navigation'
 
 type Stage = 'idle' | 'extracting' | 'done' | 'error'
 
+interface LogEntry { ts: string; msg: string; type: 'info' | 'ok' | 'err' }
+function ts() { return new Date().toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' }) }
+
 interface Extracted {
   company?: string
   role?: string
@@ -318,7 +321,14 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
   const [mode, setMode] = useState<'home' | 'url' | 'text' | 'batch'>('home')
   const [urlText, setUrlText] = useState('')
   const [textContent, setTextContent] = useState('')
+  const [log, setLog] = useState<LogEntry[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
+  const logRef = useRef<HTMLDivElement>(null)
+
+  const addLog = (msg: string, type: LogEntry['type'] = 'info') => {
+    setLog(prev => [...prev, { ts: ts(), msg, type }])
+    setTimeout(() => logRef.current?.scrollTo({ top: logRef.current.scrollHeight, behavior: 'smooth' }), 50)
+  }
 
   useEffect(() => {
     fetch('/api/local-ip').then(r => r.json()).then((d) => {
@@ -337,12 +347,15 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
     if (!files.length) return
     e.target.value = ''
     if (files.length === 1) {
+      addLog(`Received file: ${files[0].name} (${(files[0].size / 1024).toFixed(1)} KB)`)
+      addLog('Running OCR + Claude extraction…')
       setSingleStage('extracting'); setSingleError(''); setMode('batch')
       ingestFile(files[0]).then(data => {
-        if (data.error) { setSingleError(data.error); setSingleStage('error') }
-        else { setSingleExtracted(data); setSingleStage('done') }
-      }).catch(err => { setSingleError(err.message); setSingleStage('error') })
+        if (data.error) { addLog(`Extraction failed: ${data.error}`, 'err'); setSingleError(data.error); setSingleStage('error') }
+        else { addLog(`Extracted: ${data.role} @ ${data.company}`, 'ok'); setSingleExtracted(data); setSingleStage('done') }
+      }).catch(err => { addLog(`Error: ${err.message}`, 'err'); setSingleError(err.message); setSingleStage('error') })
     } else {
+      addLog(`Received ${files.length} files`)
       const items: BatchItem[] = files.map(f => ({ file: f, name: f.name, stage: 'idle' as Stage }))
       setBatch(items)
       setMode('batch')
@@ -352,15 +365,19 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
 
   const processBatch = async (items: BatchItem[]) => {
     for (let i = 0; i < items.length; i++) {
+      addLog(`Processing: ${items[i].name}`)
       setBatch(prev => prev.map((it, idx) => idx === i ? { ...it, stage: 'extracting' } : it))
       try {
         const data = await ingestFile(items[i].file)
         if (data.error) {
+          addLog(`Failed: ${items[i].name} — ${data.error}`, 'err')
           setBatch(prev => prev.map((it, idx) => idx === i ? { ...it, stage: 'error', error: data.error } : it))
         } else {
+          addLog(`Extracted: ${data.role} @ ${data.company}`, 'ok')
           setBatch(prev => prev.map((it, idx) => idx === i ? { ...it, stage: 'done', extracted: data } : it))
         }
       } catch (e) {
+        addLog(`Error: ${(e as Error).message}`, 'err')
         setBatch(prev => prev.map((it, idx) => idx === i ? { ...it, stage: 'error', error: (e as Error).message } : it))
       }
     }
@@ -369,19 +386,22 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
   const extractSingleUrl = async () => {
     const input = (mode === 'url' ? urlText : textContent).trim()
     if (!input) return
+    addLog(mode === 'url' ? `Fetching URL: ${input.slice(0, 60)}…` : 'Extracting from pasted text…')
     setSingleStage('extracting'); setSingleError('')
     try {
       const data = await (mode === 'url' ? ingestText({ url: input }) : ingestText({ text: input }))
-      if (data.error) { setSingleError(data.error); setSingleStage('error') }
-      else { setSingleExtracted(data); setSingleStage('done') }
-    } catch (e) { setSingleError((e as Error).message); setSingleStage('error') }
+      if (data.error) { addLog(`Extraction failed: ${data.error}`, 'err'); setSingleError(data.error); setSingleStage('error') }
+      else { addLog(`Extracted: ${data.role} @ ${data.company}`, 'ok'); setSingleExtracted(data); setSingleStage('done') }
+    } catch (e) { addLog(`Error: ${(e as Error).message}`, 'err'); setSingleError((e as Error).message); setSingleStage('error') }
   }
 
   const saveSingle = async (force: boolean) => {
     if (!singleExtracted?.company || !singleExtracted?.role) return
     const src = singleExtracted._source ?? 'drop-zone'
+    addLog(`Saving to tracker: ${singleExtracted.role} @ ${singleExtracted.company}`)
     const conflict = await saveToTracker(singleExtracted, src, force)
-    if (conflict?.duplicate && !force) { setSingleDup(conflict as { existing: DupEntry[] }); return }
+    if (conflict?.duplicate && !force) { addLog('Duplicate detected — already in tracker', 'err'); setSingleDup(conflict as { existing: DupEntry[] }); return }
+    addLog('Saved to tracker ✓', 'ok')
     router.push('/tracker')
   }
 
@@ -390,11 +410,14 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
     if (!item.extracted) return
     setBatch(prev => prev.map((it, i) => i === idx ? { ...it, dup: undefined } : it))
     const src = item.extracted._source ?? 'drop-zone'
+    addLog(`Saving: ${item.extracted.role} @ ${item.extracted.company}`)
     const conflict = await saveToTracker(item.extracted, src, force)
     if (conflict?.duplicate && !force) {
+      addLog('Duplicate — already in tracker', 'err')
       setBatch(prev => prev.map((it, i) => i === idx ? { ...it, dup: conflict as { existing: DupEntry[] } } : it))
       return
     }
+    addLog(`Saved ✓`, 'ok')
     setBatch(prev => prev.map((it, i) => i === idx ? { ...it, saved: true } : it))
   }
 
@@ -556,6 +579,22 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
         {/* Single done from URL/text */}
         {(mode === 'url' || mode === 'text') && singleStage === 'done' && singleExtracted && (
           <SingleResult extracted={singleExtracted} dup={singleDup} onSave={saveSingle} onDiscard={reset} onViewTracker={() => router.push('/tracker')} />
+        )}
+
+        {/* ── Activity log ── */}
+        {log.length > 0 && (
+          <div className="flex flex-col gap-1.5">
+            <p className="font-mono text-[10px] uppercase tracking-widest" style={{ color: 'var(--fg-muted)' }}>Activity log</p>
+            <div ref={logRef} className="rounded-[12px] p-3 flex flex-col gap-1 overflow-y-auto font-mono text-[11px]"
+              style={{ background: 'var(--elevated)', border: '1px solid var(--border-subtle)', maxHeight: 140 }}>
+              {log.map((l, i) => (
+                <div key={i} className="flex items-start gap-2">
+                  <span style={{ color: 'var(--fg-muted)', opacity: 0.5, flexShrink: 0 }}>{l.ts}</span>
+                  <span style={{ color: l.type === 'ok' ? 'var(--accent-primary)' : l.type === 'err' ? '#ef4444' : 'var(--fg-body)' }}>{l.msg}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         )}
 
         {/* ── Batch ── */}
