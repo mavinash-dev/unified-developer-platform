@@ -67,11 +67,7 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen" style={{ background: 'var(--canvas)' }}>
       <header className="mx-auto max-w-3xl px-6 py-14 flex flex-col gap-4">
-        <div className="flex items-center justify-between gap-4">
-          <EyebrowLabel>Profile</EyebrowLabel>
-          {version && <VersionBadge version={version.version} next={version.next} />}
-
-        </div>
+        <EyebrowLabel>Profile</EyebrowLabel>
         <h1 className="text-sub-large" style={{ color: 'var(--fg)' }}>
           {config.name ? <><span style={{ color: 'var(--accent-primary)' }}>{config.name}</span>.</> : 'Your profile.'}
         </h1>
@@ -138,11 +134,14 @@ export default function ProfilePage() {
 
         {/* Share */}
         <section className="flex flex-col gap-4">
-          <div>
-            <EyebrowLabel>Share with a friend</EyebrowLabel>
-            <p className="text-[13px] mt-1" style={{ color: 'var(--fg-muted)' }}>
-              One command — clones, installs, and starts UDD. Requires Node 18+ and Claude CLI.
-            </p>
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <EyebrowLabel>Share with a friend</EyebrowLabel>
+              <p className="text-[13px] mt-1" style={{ color: 'var(--fg-muted)' }}>
+                One command — clones, installs, and starts UDD. Requires Node 18+ and Claude CLI.
+              </p>
+            </div>
+            {version && <VersionBadge version={version.version} next={version.next} />}
           </div>
           <div className="rounded-[12px] p-4 flex items-start justify-between gap-4"
             style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
