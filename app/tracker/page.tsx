@@ -1,7 +1,8 @@
 'use client'
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import EyebrowLabel from '@/components/EyebrowLabel'
+import QRCode from 'qrcode'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -64,6 +65,80 @@ const RELATIONSHIP_LABEL: Record<string, string> = {
 
 function statusMeta(s: Status) {
   return STATUSES.find(x => x.value === s) ?? STATUSES[0]
+}
+
+// ── Phone Drop Panel ─────────────────────────────────────────────────────────
+
+function PhoneDropPanel() {
+  const [dropUrl, setDropUrl] = useState('')
+  const [hasVision, setHasVision] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState('')
+  const [open, setOpen] = useState(false)
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+
+  useEffect(() => {
+    fetch('/api/local-ip').then(r => r.json()).then(async (data) => {
+      setDropUrl(data.dropUrl)
+      setHasVision(data.hasVision)
+      const url = await QRCode.toDataURL(data.dropUrl, { width: 160, margin: 1, color: { dark: '#fdfcf0', light: '#0e1518' } })
+      setQrDataUrl(url)
+    })
+  }, [])
+
+  if (!open) {
+    return (
+      <button
+        onClick={() => setOpen(true)}
+        className="flex items-center gap-2 px-4 py-2.5 rounded-[10px] font-mono text-[12px] transition-all cursor-pointer"
+        style={{ background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.3)', color: 'var(--accent-primary)' }}
+      >
+        📱 Add from phone
+      </button>
+    )
+  }
+
+  return (
+    <div className="rounded-[14px] p-5 flex flex-col gap-4" style={{ background: 'var(--surface)', border: '1px solid var(--border-subtle)' }}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex flex-col gap-2">
+          <p className="text-[15px] font-semibold" style={{ color: 'var(--fg)' }}>Add from phone or tablet</p>
+          <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>
+            Scan the QR code on any device on the same WiFi — paste a URL, job description,{' '}
+            {hasVision ? 'or upload a screenshot.' : 'or text. (Enable screenshot parsing by adding ANTHROPIC_API_KEY to .env.local)'}
+          </p>
+          <div className="flex items-center gap-2 mt-1">
+            <code className="font-mono text-[12px] px-2 py-1 rounded-[6px]" style={{ background: 'var(--elevated)', color: 'var(--accent-primary)' }}>
+              {dropUrl}
+            </code>
+            <button
+              onClick={() => navigator.clipboard?.writeText(dropUrl)}
+              className="font-mono text-[11px]"
+              style={{ color: 'var(--fg-muted)' }}
+            >
+              copy
+            </button>
+          </div>
+          {!hasVision && (
+            <p className="font-mono text-[11px] px-2 py-1 rounded-[6px] self-start" style={{ background: 'rgba(245,158,11,0.1)', color: '#f59e0b', border: '1px solid rgba(245,158,11,0.3)' }}>
+              ⚠ Screenshot mode needs ANTHROPIC_API_KEY in .env.local
+            </p>
+          )}
+        </div>
+        {qrDataUrl && (
+          <div className="shrink-0">
+            <img src={qrDataUrl} alt="QR code for drop zone" width={120} height={120} className="rounded-[10px]" />
+          </div>
+        )}
+      </div>
+      <div className="flex gap-2">
+        <a href={dropUrl} target="_blank" rel="noopener noreferrer" className="btn btn-sm btn-primary text-[12px]">
+          Open drop zone ↗
+        </a>
+        <button onClick={() => setOpen(false)} className="btn btn-sm btn-ghost text-[12px]">Close</button>
+      </div>
+      <canvas ref={canvasRef} className="hidden" />
+    </div>
+  )
 }
 
 // ── Ingest bar ───────────────────────────────────────────────────────────────
@@ -604,7 +679,10 @@ export default function TrackerPage() {
       <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
         {/* Ingest */}
         <div className="flex flex-col gap-3">
-          <EyebrowLabel>Quick add from job posting</EyebrowLabel>
+          <div className="flex items-center justify-between">
+            <EyebrowLabel>Quick add from job posting</EyebrowLabel>
+            <PhoneDropPanel />
+          </div>
           <IngestBar onExtracted={onExtracted} />
         </div>
 
