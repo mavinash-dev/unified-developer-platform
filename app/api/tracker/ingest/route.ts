@@ -1,10 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { runClaude } from '@/lib/claude-cli'
 
+async function fetchPageText(url: string): Promise<string> {
+  const res = await fetch(url, {
+    headers: { 'User-Agent': 'Mozilla/5.0 (compatible; UDD/1.0)' },
+    signal: AbortSignal.timeout(10_000),
+  })
+  if (!res.ok) throw new Error(`Failed to fetch URL (${res.status})`)
+  const html = await res.text()
+  // Strip tags, collapse whitespace, cap at ~8k chars for Claude
+  return html
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 8000)
+}
+
 export async function POST(req: NextRequest) {
   const { text, url } = await req.json()
-  const input = (text || url || '').trim()
-  if (!input) return NextResponse.json({ error: 'text or url required' }, { status: 400 })
+  if (!text && !url) return NextResponse.json({ error: 'text or url required' }, { status: 400 })
+
+  let input: string
+  try {
+    input = url ? await fetchPageText(url) : text.trim()
+  } catch (e) {
+    return NextResponse.json({ error: `Could not fetch URL: ${(e as Error).message}` }, { status: 400 })
+  }
+  if (!input) return NextResponse.json({ error: 'No content found at URL' }, { status: 400 })
 
   const prompt = `You are a job posting parser. Extract structured data from the following job posting and return ONLY valid JSON — no markdown, no explanation, no code fences.
 
