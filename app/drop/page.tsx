@@ -29,6 +29,7 @@ interface BatchItem {
   error?: string
   dup?: { existing: DupEntry[] }
   saved?: boolean
+  savedId?: number
 }
 
 const ACCEPT = 'image/*,.pdf,.doc,.docx,.txt,.md'
@@ -51,7 +52,7 @@ async function ingestText(payload: { text?: string; url?: string }): Promise<Ext
   return res.json()
 }
 
-async function saveToTracker(extracted: Extracted, source: string, force: boolean): Promise<{ duplicate?: boolean; existing?: DupEntry[] } | null> {
+async function saveToTracker(extracted: Extracted, source: string, force: boolean): Promise<{ duplicate?: boolean; existing?: DupEntry[]; id?: number } | null> {
   const res = await fetch('/api/tracker', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -63,7 +64,8 @@ async function saveToTracker(extracted: Extracted, source: string, force: boolea
     }),
   })
   if (res.status === 409) return res.json()
-  return null
+  const data = await res.json()
+  return { id: data.id }
 }
 
 // ── Main page ──────────────────────────────────────────────────
@@ -92,7 +94,7 @@ export default function DropPage() {
 // Server handles OCR + extraction + dedup + tracker creation automatically.
 function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
   const [stage, setStage] = useState<'idle' | 'sending' | 'done' | 'skipped' | 'error'>('idle')
-  const [result, setResult] = useState<{ company?: string; role?: string; existing?: { company: string; role: string; status: string } } | null>(null)
+  const [result, setResult] = useState<{ company?: string; role?: string; id?: number; existing?: { company: string; role: string; status: string } } | null>(null)
   const [error, setError] = useState('')
   const [urlMode, setUrlMode] = useState(false)
   const [pasteMode, setPasteMode] = useState(false)
@@ -109,7 +111,7 @@ function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
       form.append('file', file)
       const res = await fetch('/api/tracker/ingest-and-save', { method: 'POST', body: form })
       const data = await res.json()
-      if (data.ok) { setResult({ company: data.company, role: data.role }); setStage('done') }
+      if (data.ok) { setResult({ company: data.company, role: data.role, id: data.id }); setStage('done') }
       else if (data.skipped) { setResult({ company: data.extracted?.company, role: data.extracted?.role, existing: data.existing }); setStage('skipped') }
       else { setError(data.error ?? 'Something went wrong'); setStage('error') }
     } catch (e) { setError((e as Error).message); setStage('error') }
@@ -270,8 +272,11 @@ function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
               <p className="text-[16px]" style={{ color: 'var(--accent-primary)' }}>{result.role}</p>
               <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>{result.company}</p>
             </div>
-            <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>Check your laptop — it&apos;s in the tracker now.</p>
-            <button onClick={reset} className="btn btn-md btn-ghost mt-2">Send another →</button>
+            <a href={result.id ? `/tracker/${result.id}` : '/tracker'}
+              className="btn btn-md btn-primary w-full text-[15px] py-4 text-center" style={{ borderRadius: 14 }}>
+              Start application →
+            </a>
+            <button onClick={reset} className="btn btn-md btn-ghost w-full">Send another</button>
           </div>
         )}
 
@@ -399,10 +404,10 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
     if (!singleExtracted?.company || !singleExtracted?.role) return
     const src = singleExtracted._source ?? 'drop-zone'
     addLog(`Saving to tracker: ${singleExtracted.role} @ ${singleExtracted.company}`)
-    const conflict = await saveToTracker(singleExtracted, src, force)
-    if (conflict?.duplicate && !force) { addLog('Duplicate detected — already in tracker', 'err'); setSingleDup(conflict as { existing: DupEntry[] }); return }
-    addLog('Saved to tracker ✓', 'ok')
-    router.push('/tracker')
+    const result = await saveToTracker(singleExtracted, src, force)
+    if (result?.duplicate && !force) { addLog('Duplicate detected — already in tracker', 'err'); setSingleDup(result as { existing: DupEntry[] }); return }
+    addLog('Saved ✓ — opening job page', 'ok')
+    router.push(result?.id ? `/tracker/${result.id}` : '/tracker')
   }
 
   const saveBatchItem = async (idx: number, force: boolean) => {
@@ -418,7 +423,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
       return
     }
     addLog(`Saved ✓`, 'ok')
-    setBatch(prev => prev.map((it, i) => i === idx ? { ...it, saved: true } : it))
+    setBatch(prev => prev.map((it, i) => i === idx ? { ...it, saved: true, savedId: conflict?.id } : it))
   }
 
   const saveAllBatch = async () => {
@@ -722,7 +727,12 @@ function BatchCard({ item, onSave }: { item: BatchItem; onSave: (force: boolean)
           {!item.saved && !item.dup && (
             <button onClick={() => onSave(false)} className="btn btn-md btn-primary text-[12px] mt-1 w-full">Add to tracker →</button>
           )}
-          {item.saved && <p className="font-mono text-[11px]" style={{ color: DROP_SOLID }}>✓ Added</p>}
+          {item.saved && (
+            <a href={item.savedId ? `/tracker/${item.savedId}` : '/tracker'}
+              className="btn btn-md btn-primary text-[12px] mt-1 w-full text-center">
+              Start application →
+            </a>
+          )}
         </div>
       )}
       {item.stage === 'error' && (
