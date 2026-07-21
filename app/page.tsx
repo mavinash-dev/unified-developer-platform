@@ -21,17 +21,20 @@ function DashboardContent() {
 
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
-  if (activeSkill) {
+  // If a skill is in the URL, show it immediately — don't wait for the skills list
+  if (activeSkillId) {
     return (
       <div className="p-6 md:p-10 flex flex-col gap-6">
         <div className="flex flex-col gap-1">
-          <EyebrowLabel color="var(--accent-primary)">{activeSkill.category}</EyebrowLabel>
-          <h1 className="text-sub-small" style={{ color: 'var(--fg)' }}>/{activeSkill.id}</h1>
-          {activeSkill.description && (
+          {activeSkill?.category && (
+            <EyebrowLabel color="var(--accent-primary)">{activeSkill.category}</EyebrowLabel>
+          )}
+          <h1 className="text-sub-small" style={{ color: 'var(--fg)' }}>/{activeSkillId}</h1>
+          {activeSkill?.description && (
             <p className="text-[15px]" style={{ color: 'var(--fg-muted)' }}>{activeSkill.description}</p>
           )}
         </div>
-        <SkillRunner skillId={activeSkill.id} description={activeSkill.description} />
+        <SkillRunner skillId={activeSkillId} description={activeSkill?.description} />
       </div>
     )
   }

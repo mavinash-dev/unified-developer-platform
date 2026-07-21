@@ -57,7 +57,7 @@ export function streamClaude(
   prompt: string,
   skill: string,
   onChunk: (chunk: string) => void,
-  onDone: (tokensIn: number, tokensOut: number) => void,
+  onDone: (tokensIn: number, tokensOut: number, model: string) => void,
   onError: (err: Error) => void
 ) {
   const args = ['-p', prompt, '--output-format', 'stream-json', '--verbose']
@@ -65,6 +65,7 @@ export function streamClaude(
 
   let tokensIn = 0
   let tokensOut = 0
+  let model = ''
   let buffer = ''
 
   proc.stdout.on('data', (d: Buffer) => {
@@ -76,6 +77,7 @@ export function streamClaude(
       if (!line.trim()) continue
       try {
         const event = JSON.parse(line)
+        if (event.model && !model) model = event.model
         if (event.type === 'assistant' && event.message?.content) {
           for (const block of event.message.content) {
             if (block.type === 'text') onChunk(block.text)
@@ -95,7 +97,7 @@ export function streamClaude(
       INSERT INTO token_log (date, skill, tokens_in, tokens_out)
       VALUES (?, ?, ?, ?)
     `).run(today, skill, tokensIn, tokensOut)
-    onDone(tokensIn, tokensOut)
+    onDone(tokensIn, tokensOut, model)
   })
 
   proc.on('error', onError)

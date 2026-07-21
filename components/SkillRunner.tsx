@@ -27,6 +27,7 @@ export default function SkillRunner({ skillId, description, defaultArgs = '' }: 
   const [output, setOutput] = useState('')
   const [status, setStatus] = useState<'idle' | 'running' | 'done' | 'error'>('idle')
   const [tokens, setTokens] = useState<{ in: number; out: number } | null>(null)
+  const [model, setModel] = useState<string>('')
   const [skillActions, setSkillActions] = useState<SkillAction[]>([])
   const abortRef = useRef<AbortController | null>(null)
   const termRef  = useRef<HTMLDivElement>(null)
@@ -38,7 +39,7 @@ export default function SkillRunner({ skillId, description, defaultArgs = '' }: 
 
   const run = useCallback(async () => {
     if (status === 'running') { abortRef.current?.abort(); setStatus('idle'); return }
-    setOutput(''); setTokens(null); setSkillActions([]); setStatus('running')
+    setOutput(''); setTokens(null); setModel(''); setSkillActions([]); setStatus('running')
     const ctrl = new AbortController()
     abortRef.current = ctrl
 
@@ -72,7 +73,7 @@ export default function SkillRunner({ skillId, description, defaultArgs = '' }: 
                 return [...p, ...actions.filter(a => !existing.has(a.next))]
               })
             }
-            if (ev.done)  setTokens({ in: ev.tokensIn, out: ev.tokensOut })
+            if (ev.done)  { setTokens({ in: ev.tokensIn, out: ev.tokensOut }); if (ev.model) setModel(ev.model) }
             if (ev.error) { setOutput(p => p + `\n\n❌ ${ev.error}`); setStatus('error') }
           } catch { /* skip */ }
         }
@@ -105,11 +106,16 @@ export default function SkillRunner({ skillId, description, defaultArgs = '' }: 
             <span className="w-3 h-3 rounded-full" style={{ background: '#3fb950', opacity: 0.8 }} />
           </div>
           <span className="font-mono text-[13px]" style={{ color: 'var(--fg-muted)' }}>/{skillId}</span>
+          {model && (
+            <span className="font-mono text-[11px] px-2 py-0.5 rounded-full" style={{ color: 'var(--accent-blue)', background: 'rgba(61,157,255,0.1)' }}>
+              {model}
+            </span>
+          )}
         </div>
         <div className="flex items-center gap-3">
           {tokens && (
             <span className="font-mono text-[12px]" style={{ color: 'var(--fg-muted)' }}>
-              ↑{tokens.in.toLocaleString()} ↓{tokens.out.toLocaleString()} tokens
+              ↑{tokens.in.toLocaleString()} ↓{tokens.out.toLocaleString()} tok
             </span>
           )}
           <span

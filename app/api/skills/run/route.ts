@@ -31,8 +31,8 @@ export async function POST(req: NextRequest) {
         (chunk) => {
           controller.enqueue(encoder.encode(`data: ${JSON.stringify({ text: chunk })}\n\n`))
         },
-        (tokensIn, tokensOut) => {
-          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, tokensIn, tokensOut })}\n\n`))
+        (tokensIn, tokensOut, model) => {
+          controller.enqueue(encoder.encode(`data: ${JSON.stringify({ done: true, tokensIn, tokensOut, model })}\n\n`))
           controller.close()
         },
         (err) => {
