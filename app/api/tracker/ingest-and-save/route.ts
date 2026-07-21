@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import db from '@/lib/db'
+import { emit } from '@/lib/drop-bus'
 
 // Fire-and-forget endpoint for mobile drop zone:
 // Upload file → OCR → extract → dedup check → auto-save to tracker
@@ -60,11 +61,16 @@ export async function POST(req: NextRequest) {
     JSON.stringify(extracted.key_skills ?? []), source
   )
 
-  return NextResponse.json({
-    ok: true,
-    id: result.lastInsertRowid,
+  const id = Number(result.lastInsertRowid)
+
+  emit({
+    id,
     company: extracted.company,
     role: extracted.role,
+    location: extracted.location ?? '',
     source,
+    ts: new Date().toISOString(),
   })
+
+  return NextResponse.json({ ok: true, id, company: extracted.company, role: extracted.role, source })
 }

@@ -324,6 +324,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
   const [urlText, setUrlText] = useState('')
   const [textContent, setTextContent] = useState('')
   const [log, setLog] = useState<LogEntry[]>([])
+  const [incoming, setIncoming] = useState<{ id: number; company: string; role: string; location: string; ts: string }[]>([])
   const fileRef = useRef<HTMLInputElement>(null)
   const logRef = useRef<HTMLDivElement>(null)
 
@@ -336,6 +337,18 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
     fetch('/api/local-ip').then(r => r.json()).then((d) => {
       setLocalUrl(d.dropUrl)
     }).catch(() => {})
+  }, [])
+
+  // Live mobile → desktop feed via SSE
+  useEffect(() => {
+    const es = new EventSource('/api/drop/stream')
+    es.onmessage = (e) => {
+      try {
+        const data = JSON.parse(e.data)
+        setIncoming(prev => [data, ...prev].slice(0, 10))
+      } catch { /* skip */ }
+    }
+    return () => es.close()
   }, [])
 
   const reset = () => {
@@ -488,6 +501,32 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
                 <p className="text-[11px]" style={{ color: 'var(--fg-muted)' }}>Same WiFi · files auto-save to tracker</p>
               </div>
             </div>
+
+            {/* Incoming from mobile */}
+            {incoming.length > 0 && (
+              <div className="w-full flex flex-col gap-2">
+                <p className="font-mono text-[10px] uppercase tracking-widest flex items-center gap-2" style={{ color: DROP_SOLID }}>
+                  <span className="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style={{ background: DROP_SOLID }} />
+                  Received from mobile
+                </p>
+                <div className="flex flex-col gap-2">
+                  {incoming.map((item) => (
+                    <a key={`${item.id}-${item.ts}`} href={`/tracker/${item.id}`}
+                      className="flex items-center justify-between gap-3 rounded-[12px] px-4 py-3 hover:opacity-80 transition-opacity"
+                      style={{ background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.2)' }}>
+                      <div className="flex flex-col gap-0.5 min-w-0">
+                        <p className="text-[13px] font-semibold truncate" style={{ color: 'var(--fg)' }}>{item.role}</p>
+                        <p className="text-[11px] truncate" style={{ color: 'var(--fg-muted)' }}>{item.company}{item.location ? ` · ${item.location}` : ''}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-0.5 shrink-0">
+                        <span className="font-mono text-[10px]" style={{ color: DROP_SOLID }}>Start →</span>
+                        <span className="font-mono text-[9px]" style={{ color: 'var(--fg-muted)' }}>{new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    </a>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Divider */}
             <div className="flex items-center gap-3 w-full">
