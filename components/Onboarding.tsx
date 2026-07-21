@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 interface Props {
   onComplete: (name: string) => void
@@ -10,6 +11,7 @@ export default function Onboarding({ onComplete }: Props) {
   const [contextPaths, setContextPaths] = useState('')
   const [step, setStep] = useState<'name' | 'context'>('name')
   const [saving, setSaving] = useState(false)
+  const router = useRouter()
 
   const submitName = (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,6 +30,7 @@ export default function Onboarding({ onComplete }: Props) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name: name.trim(), contextFiles }),
     })
+    router.replace('/')
     onComplete(name.trim())
   }
 

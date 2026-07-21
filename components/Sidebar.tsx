@@ -89,17 +89,6 @@ export default function Sidebar() {
         >
           ⊞
         </Link>
-        <Link
-          href="/resume"
-          className="w-10 h-10 rounded-[10px] flex items-center justify-center font-mono text-[11px] transition-colors"
-          style={{
-            background: pathname === '/resume' ? 'rgba(168,85,247,0.12)' : 'transparent',
-            color: pathname === '/resume' ? 'var(--accent-primary)' : 'var(--fg-muted)',
-          }}
-          title="Resumes"
-        >
-          ≡
-        </Link>
         <div className="w-6 h-px" style={{ background: 'var(--border-subtle)' }} />
         {skills.map(s => (
           <Link
@@ -160,17 +149,6 @@ export default function Sidebar() {
           >
             <span className="font-mono text-[11px] opacity-60">⊞</span>
             Dashboard
-          </Link>
-          <Link
-            href="/resume"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors"
-            style={{
-              background: pathname === '/resume' ? 'rgba(168,85,247,0.12)' : 'transparent',
-              color: pathname === '/resume' ? 'var(--accent-primary)' : 'var(--fg-body)',
-            }}
-          >
-            <span className="font-mono text-[11px] opacity-60">≡</span>
-            Resumes
           </Link>
           <Link
             href="/chat"

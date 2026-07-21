@@ -17,6 +17,44 @@ function greeting() {
   return 'Hey'
 }
 
+const ACCENT_CYCLE = [
+  { border: 'rgba(168,85,247,0.4)', label: 'var(--accent-primary)', tag: '#a855f7' },
+  { border: 'rgba(61,157,255,0.4)', label: 'var(--accent-blue)', tag: '#3d9dff' },
+  { border: 'rgba(16,185,129,0.4)', label: '#10b981', tag: '#10b981' },
+  { border: 'rgba(245,158,11,0.4)', label: 'var(--accent-yellow)', tag: '#f59e0b' },
+]
+
+function SkillCard({ skill, index }: { skill: Skill; index: number }) {
+  const accent = ACCENT_CYCLE[index % ACCENT_CYCLE.length]
+  return (
+    <Link href={`/?skill=${skill.id}`} className="block group">
+      <div
+        className="h-full rounded-[14px] p-px transition-all duration-200"
+        style={{ background: accent.border }}
+      >
+        <div
+          className="h-full rounded-[13px] p-5 flex flex-col gap-3 transition-colors"
+          style={{ background: 'var(--surface)' }}
+        >
+          <div className="flex items-center justify-between">
+            <span
+              className="font-mono text-[10px] font-semibold tracking-widest uppercase px-2 py-0.5 rounded-full"
+              style={{ background: `${accent.tag}18`, color: accent.tag }}
+            >
+              {skill.category}
+            </span>
+            <span className="font-mono text-[11px] transition-transform group-hover:translate-x-0.5" style={{ color: accent.tag }}>→</span>
+          </div>
+          <div className="flex flex-col gap-1">
+            <p className="text-[15px] font-semibold" style={{ color: 'var(--fg)' }}>/{skill.id}</p>
+            <p className="text-[13px] leading-relaxed" style={{ color: 'var(--fg-muted)' }}>{skill.description}</p>
+          </div>
+        </div>
+      </div>
+    </Link>
+  )
+}
+
 function DashboardContent() {
   const [skills, setSkills] = useState<Skill[]>([])
   const [userName, setUserName] = useState<string | null>(null)
@@ -58,8 +96,19 @@ function DashboardContent() {
     )
   }
 
+  // Group skills by category for section headers
+  const grouped = skills.reduce((acc, s) => {
+    const cat = s.category || 'General'
+    if (!acc[cat]) acc[cat] = []
+    acc[cat].push(s)
+    return acc
+  }, {} as Record<string, Skill[]>)
+
+  let cardIndex = 0
+
   return (
     <div>
+      {/* Hero */}
       <header className="mx-auto max-w-5xl flex flex-col gap-4 px-6 py-16 md:py-20">
         <EyebrowLabel>Unified Developer Dashboard</EyebrowLabel>
         <h1 className="text-sub-large" style={{ color: 'var(--fg)' }}>
@@ -67,71 +116,54 @@ function DashboardContent() {
           <span style={{ color: 'var(--accent-primary)' }}>{userName}.</span>
         </h1>
         <p className="max-w-2xl text-lg" style={{ color: 'var(--fg-body)' }}>
-          {today} — your career intelligence platform.
-          Build resumes, scan for ATS fit, and scout better roles.
+          {today} — your AI workspace. Pick a skill below or use the sidebar.
         </p>
       </header>
 
       <hr className="border-t mx-6" style={{ borderColor: 'var(--border-subtle)' }} />
 
-      <section className="mx-auto max-w-5xl px-6 py-14">
-        <div className="mb-8 flex flex-col gap-2">
-          <EyebrowLabel>01 / Overview</EyebrowLabel>
-          <h2 className="text-sub-small" style={{ color: 'var(--fg)' }}>What&apos;s running.</h2>
+      {/* Token overview */}
+      <section className="mx-auto max-w-5xl px-6 py-10">
+        <div className="mb-6 flex flex-col gap-2">
+          <EyebrowLabel>Overview</EyebrowLabel>
+          <h2 className="text-sub-small" style={{ color: 'var(--fg)' }}>Usage today.</h2>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="md:col-span-1">
-            <TokenMeter />
-          </div>
-          <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Link href="/?skill=resume-update" className="block">
-              <div className="slab-violet h-full">
-                <article className="slab-inner h-full hover:bg-[#fffefa] transition-colors">
-                  <div className="flex flex-col gap-2">
-                    <p className="font-mono text-[12px] font-medium leading-none" style={{ color: '#080f11' }}>01 / RESUME</p>
-                    <div aria-hidden className="h-px w-full" style={{ background: '#080f11', opacity: 0.15 }} />
-                  </div>
-                  <div>
-                    <p className="text-card-title" style={{ color: '#080f11' }}>Resume manager</p>
-                    <p className="text-[14px] font-medium mt-3" style={{ color: '#1a242a' }}>
-                      Build, ATS-scan, and save tailored resumes. Gate at 85% before delivery.
-                    </p>
-                  </div>
-                  <span className="text-[14px] font-semibold" style={{ color: '#a855f7' }}>Open →</span>
-                </article>
-              </div>
-            </Link>
-
-            <Link href="/?skill=job-scout" className="block">
-              <div className="slab-blue h-full">
-                <article className="slab-inner h-full hover:bg-[#fffefa] transition-colors">
-                  <div className="flex flex-col gap-2">
-                    <p className="font-mono text-[12px] font-medium leading-none" style={{ color: '#080f11' }}>02 / SCOUT</p>
-                    <div aria-hidden className="h-px w-full" style={{ background: '#080f11', opacity: 0.15 }} />
-                  </div>
-                  <div>
-                    <p className="text-card-title" style={{ color: '#080f11' }}>Job scout</p>
-                    <p className="text-[14px] font-medium mt-3" style={{ color: '#1a242a' }}>
-                      Find equivalent roles at same or higher TC. Live benchmarks from levels.fyi.
-                    </p>
-                  </div>
-                  <span className="text-[14px] font-semibold" style={{ color: '#3d9dff' }}>Open →</span>
-                </article>
-              </div>
-            </Link>
-          </div>
+        <div className="max-w-sm">
+          <TokenMeter />
         </div>
       </section>
 
       <hr className="border-t mx-6" style={{ borderColor: 'var(--border-subtle)' }} />
 
-      <section className="mx-auto max-w-5xl px-6 py-10">
-        <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-          {skills.length} skill{skills.length !== 1 ? 's' : ''} available — select one from the sidebar.
-          New <span className="font-mono text-[13px]">skills/*.md</span> files with frontmatter appear automatically.
-        </p>
-      </section>
+      {/* Skills — grouped by category */}
+      {skills.length === 0 ? (
+        <section className="mx-auto max-w-5xl px-6 py-10">
+          <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+            Loading skills…
+          </p>
+        </section>
+      ) : (
+        Object.entries(grouped).map(([category, catSkills]) => {
+          const section = (
+            <section key={category} className="mx-auto max-w-5xl px-6 py-10">
+              <div className="mb-6 flex flex-col gap-2">
+                <EyebrowLabel>{category}</EyebrowLabel>
+                <h2 className="text-sub-small" style={{ color: 'var(--fg)' }}>Skills.</h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {catSkills.map(skill => {
+                  const el = <SkillCard key={skill.id} skill={skill} index={cardIndex} />
+                  cardIndex++
+                  return el
+                })}
+              </div>
+            </section>
+          )
+          return section
+        })
+      )}
+
+      <div className="h-10" />
     </div>
   )
 }
