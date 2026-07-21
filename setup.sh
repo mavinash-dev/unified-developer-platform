@@ -19,16 +19,30 @@ print_banner() {
   echo ""
 }
 
+# Finds the latest release tag (Greek alphabet pattern) and checks it out.
+# Falls back to main if no release tag exists yet.
+checkout_latest_release() {
+  git fetch --tags --quiet
+  LATEST_TAG=$(git tag --sort=-creatordate | grep -E '^[a-z]+(-[a-z]+)?$' | head -1 || true)
+  if [[ -n "$LATEST_TAG" ]]; then
+    echo "→  Checking out release: $LATEST_TAG"
+    git checkout "$LATEST_TAG" --quiet
+  else
+    echo "→  No release tag found — using latest main"
+  fi
+}
+
 # ── Update ────────────────────────────────────────────────────────────────────
 if [ "$MODE" = "--update" ]; then
   print_banner
-  echo "→  Pulling latest changes …"
-  git pull --ff-only
+  echo "→  Fetching latest release …"
+  checkout_latest_release
   echo "→  Syncing dependencies …"
   npm install --silent
+  CURRENT=$(git tag --sort=-creatordate | grep -E '^[a-z]+(-[a-z]+)?$' | head -1 || echo "unreleased")
   echo ""
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-  echo "  ✓  Updated. Restart the dev server to apply changes:"
+  echo "  ✓  On release: $CURRENT. Restart the dev server:"
   echo ""
   echo "     npm run dev"
   echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
@@ -84,27 +98,31 @@ fi
 echo "✓  Claude CLI found"
 
 if [ -d "$DIR" ]; then
-  echo "✓  Repo already cloned at ./$DIR — pulling latest"
-  git -C "$DIR" pull --ff-only
+  echo "✓  Repo already cloned at ./$DIR"
+  cd "$DIR"
+  checkout_latest_release
 else
   echo "→  Cloning $REPO …"
   git clone "$REPO" "$DIR"
+  cd "$DIR"
+  checkout_latest_release
 fi
 
-cd "$DIR"
 echo "→  Installing dependencies …"
 npm install --silent
 mkdir -p data
 
+CURRENT=$(git tag --sort=-creatordate | grep -E '^[a-z]+(-[a-z]+)?$' | head -1 || echo "unreleased")
+
 echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
-echo "  ✓  All done. Start the dashboard:"
+echo "  ✓  All done. Release: $CURRENT"
 echo ""
 echo "     cd $DIR && npm run dev"
 echo ""
 echo "  Then open: http://localhost:3004"
 echo ""
-echo "  Later: ./setup.sh --update   pull latest changes"
+echo "  Later: ./setup.sh --update   jump to latest release"
 echo "         ./setup.sh --clean    wipe your data and start fresh"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
