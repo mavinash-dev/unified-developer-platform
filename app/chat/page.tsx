@@ -97,7 +97,7 @@ export default function ChatPage() {
       <div className="px-6 py-4 border-b shrink-0 flex items-center justify-between" style={{ borderColor: 'var(--border-subtle)' }}>
         <div className="flex flex-col gap-0.5">
           <EyebrowLabel>Chat</EyebrowLabel>
-          <h1 className="text-sub-small" style={{ color: 'var(--fg)' }}>Ask Claude anything</h1>
+          <h1 className="text-[24px] font-bold tracking-tight" style={{ color: 'var(--fg)' }}>Ask Claude anything</h1>
         </div>
         {model && (
           <span className="font-mono text-[11px] px-2.5 py-1 rounded-full" style={{ color: 'var(--accent-blue)', background: 'rgba(61,157,255,0.1)' }}>

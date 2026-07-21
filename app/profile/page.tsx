@@ -83,7 +83,7 @@ export default function ProfilePage() {
         {/* Stats */}
         {stats && (
           <section className="flex flex-col gap-4">
-            <EyebrowLabel>Activity</EyebrowLabel>
+            <p className="text-[18px] font-semibold tracking-tight" style={{ color: 'var(--fg)' }}>Activity</p>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
               {[
                 { label: 'Skill runs', value: stats.totalSessions },
@@ -108,7 +108,7 @@ export default function ProfilePage() {
         {/* Name */}
         <section className="flex flex-col gap-4">
           <div>
-            <EyebrowLabel>Display name</EyebrowLabel>
+            <p className="text-[18px] font-semibold tracking-tight" style={{ color: 'var(--fg)' }}>Display name</p>
             <p className="text-[13px] mt-1" style={{ color: 'var(--fg-muted)' }}>
               Used in greetings and injected into every skill run so Claude knows who it&apos;s helping.
             </p>
@@ -136,7 +136,7 @@ export default function ProfilePage() {
         <section className="flex flex-col gap-4">
           <div className="flex items-center justify-between gap-4">
             <div>
-              <EyebrowLabel>Share with a friend</EyebrowLabel>
+              <p className="text-[18px] font-semibold tracking-tight" style={{ color: 'var(--fg)' }}>Share with a friend</p>
               <p className="text-[13px] mt-1" style={{ color: 'var(--fg-muted)' }}>
                 One command — clones, installs, and starts UDD. Requires Node 18+ and Claude CLI.
               </p>
@@ -203,7 +203,7 @@ function ContextSnippets({ snippets, onChange }: { snippets: Snippet[]; onChange
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <EyebrowLabel>Your context</EyebrowLabel>
+        <p className="text-[18px] font-semibold tracking-tight" style={{ color: 'var(--fg)' }}>Your context</p>
         <p className="text-[13px] mt-1" style={{ color: 'var(--fg-muted)' }}>
           Claude reads this before every skill run and chat. Add anything that helps it understand who you are and what you&apos;re working on.
         </p>
@@ -436,7 +436,7 @@ function DangerZone({ onCleaned }: { onCleaned: () => void }) {
   return (
     <section className="flex flex-col gap-4">
       <div>
-        <EyebrowLabel color="var(--destructive)">Danger zone</EyebrowLabel>
+        <p className="text-[18px] font-semibold tracking-tight" style={{ color: 'var(--destructive)' }}>Danger zone</p>
         <p className="text-[13px] mt-1" style={{ color: 'var(--fg-muted)' }}>
           These actions are permanent and local. No undo.
         </p>

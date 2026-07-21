@@ -667,7 +667,7 @@ export default function TrackerPage() {
       <main className="mx-auto max-w-5xl px-6 py-10 flex flex-col gap-8">
         {/* Ingest */}
         <div className="flex flex-col gap-3">
-          <EyebrowLabel>Quick add from job posting</EyebrowLabel>
+          <p className="text-[18px] font-semibold tracking-tight" style={{ color: 'var(--fg)' }}>Quick add from job posting</p>
           <IngestBar onExtracted={onExtracted} />
         </div>
 
