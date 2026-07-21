@@ -3,19 +3,13 @@ import { useEffect, useState } from 'react'
 import EyebrowLabel from './EyebrowLabel'
 
 interface TokenData {
-  daily: { total: number; in: number; out: number; limit: number; pct: number }
-  monthly: { total: number; in: number; out: number; limit: number; pct: number }
+  daily: { total: number; in: number; out: number }
+  monthly: { total: number; in: number; out: number }
   bySkill: { skill: string; tokens_in: number; tokens_out: number }[]
 }
 
 function fmt(n: number) {
   return n.toLocaleString()
-}
-
-function barColor(pct: number) {
-  if (pct >= 90) return 'var(--destructive)'
-  if (pct >= 75) return 'var(--accent-yellow)'
-  return 'var(--accent-primary)'
 }
 
 export default function TokenMeter() {
@@ -45,28 +39,16 @@ export default function TokenMeter() {
             { label: 'Today', d: data.daily },
             { label: 'This month', d: data.monthly },
           ].map(({ label, d }) => (
-            <div key={label} className="flex flex-col gap-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-[14px] font-medium" style={{ color: 'var(--fg-body)' }}>{label}</span>
-                <span className="font-mono text-[13px]" style={{ color: barColor(d.pct) }}>
-                  {fmt(d.total)} / {fmt(d.limit)}
+            <div key={label} className="flex justify-between items-baseline">
+              <span className="text-[14px] font-medium" style={{ color: 'var(--fg-body)' }}>{label}</span>
+              <div className="flex flex-col items-end gap-0.5">
+                <span className="font-mono text-[13px]" style={{ color: 'var(--accent-primary)' }}>
+                  {fmt(d.total)} tokens
+                </span>
+                <span className="font-mono text-[11px]" style={{ color: 'var(--fg-muted)' }}>
+                  {fmt(d.in)} in · {fmt(d.out)} out
                 </span>
               </div>
-              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-subtle)' }}>
-                <div
-                  className="h-full rounded-full transition-all duration-700"
-                  style={{
-                    width: `${Math.min(d.pct, 100)}%`,
-                    background: barColor(d.pct),
-                    boxShadow: d.pct > 5 ? `0 0 8px ${barColor(d.pct)}60` : 'none',
-                  }}
-                />
-              </div>
-              {d.pct >= 80 && (
-                <p className="text-[13px]" style={{ color: 'var(--accent-yellow)' }}>
-                  ⚠ {d.pct}% of {label === 'Today' ? 'daily' : 'monthly'} limit
-                </p>
-              )}
             </div>
           ))}
 

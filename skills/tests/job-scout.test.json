@@ -1,0 +1,18 @@
+[
+  {
+    "name": "returns job search strategy",
+    "args": "Senior frontend engineer, 5 years React, looking for remote roles at Series B startups",
+    "assertions": [
+      { "type": "contains", "value": "react", "description": "references the tech stack" },
+      { "type": "min_length", "value": 200, "description": "output is non-trivial" },
+      { "type": "not_contains", "value": "SKILL_ACTION", "description": "SKILL_ACTION lines stripped" }
+    ]
+  },
+  {
+    "name": "handles broad input gracefully",
+    "args": "software engineer looking for a job",
+    "assertions": [
+      { "type": "min_length", "value": 100, "description": "gives at least some guidance" }
+    ]
+  }
+]

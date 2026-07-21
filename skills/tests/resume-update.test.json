@@ -1,0 +1,20 @@
+[
+  {
+    "name": "formats resume as markdown",
+    "args": "Software Engineer with 3 years experience in React and Node.js, worked at Acme Corp building internal tools",
+    "assertions": [
+      { "type": "contains", "value": "experience", "description": "mentions experience" },
+      { "type": "contains", "value": "##", "description": "uses markdown headings" },
+      { "type": "min_length", "value": 300, "description": "output is substantial" }
+    ]
+  },
+  {
+    "name": "includes skills section",
+    "args": "Data scientist with Python, SQL, and machine learning experience at a fintech startup",
+    "assertions": [
+      { "type": "contains", "value": "python", "description": "mentions Python skill" },
+      { "type": "not_contains", "value": "SKILL_ACTION", "description": "SKILL_ACTION lines are stripped" },
+      { "type": "min_length", "value": 200, "description": "output is non-trivial" }
+    ]
+  }
+]

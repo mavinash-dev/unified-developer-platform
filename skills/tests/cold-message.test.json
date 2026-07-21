@@ -1,0 +1,27 @@
+[
+  {
+    "name": "LinkedIn connection request under 300 chars",
+    "args": "LinkedIn connection request to Sarah Chen, Senior Engineer at Stripe, mutual interest in distributed systems",
+    "assertions": [
+      { "type": "contains", "value": "sarah", "description": "personalises with name" },
+      { "type": "min_length", "value": 100, "description": "output has substance" },
+      { "type": "not_contains", "value": "SKILL_ACTION", "description": "SKILL_ACTION lines stripped" }
+    ]
+  },
+  {
+    "name": "cold email for job referral",
+    "args": "Cold email to Marcus Lee, Engineering Manager at Notion, asking for a referral for a Staff Engineer role",
+    "assertions": [
+      { "type": "contains", "value": "notion", "description": "mentions target company" },
+      { "type": "contains", "value": "subject", "description": "includes email subject line" },
+      { "type": "min_length", "value": 150, "description": "email body has substance" }
+    ]
+  },
+  {
+    "name": "writes multiple variants",
+    "args": "LinkedIn message to a recruiter at Anthropic who reached out about a senior engineering role",
+    "assertions": [
+      { "type": "min_length", "value": 200, "description": "at least two variants written" }
+    ]
+  }
+]

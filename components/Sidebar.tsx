@@ -11,16 +11,10 @@ function fmt(n: number) {
   return n.toLocaleString()
 }
 
-function barColor(pct: number) {
-  if (pct >= 90) return 'var(--destructive)'
-  if (pct >= 75) return 'var(--accent-yellow)'
-  return 'var(--accent-primary)'
-}
-
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
   const [skills, setSkills] = useState<Skill[]>([])
-  const [tokens, setTokens] = useState<{ daily: { total: number; limit: number; pct: number } } | null>(null)
+  const [tokens, setTokens] = useState<{ daily: { total: number; in: number; out: number } } | null>(null)
   const [collapsedCategories, setCollapsedCategories] = useState<Set<string>>(new Set())
   const pathname = usePathname()
   const searchParams = useSearchParams()
@@ -258,22 +252,13 @@ export default function Sidebar() {
       {/* Token bar at bottom */}
       {tokens && (
         <div className="border-t px-4 py-3 shrink-0" style={{ borderColor: 'var(--border-subtle)' }}>
-          <div className="flex justify-between items-center mb-1.5">
+          <div className="flex justify-between items-center">
             <span className="font-mono text-[10px] font-medium tracking-widest uppercase" style={{ color: 'var(--fg-muted)' }}>
               Today
             </span>
-            <span className="font-mono text-[11px]" style={{ color: barColor(tokens.daily.pct) }}>
-              {fmt(tokens.daily.total)} / {fmt(tokens.daily.limit)}
+            <span className="font-mono text-[11px]" style={{ color: 'var(--accent-primary)' }}>
+              {fmt(tokens.daily.total)} tokens
             </span>
-          </div>
-          <div className="h-1 rounded-full overflow-hidden" style={{ background: 'var(--elevated)' }}>
-            <div
-              className="h-full rounded-full transition-all duration-700"
-              style={{
-                width: `${Math.min(tokens.daily.pct, 100)}%`,
-                background: barColor(tokens.daily.pct),
-              }}
-            />
           </div>
         </div>
       )}
