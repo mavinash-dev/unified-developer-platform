@@ -24,7 +24,18 @@ export async function POST(req: NextRequest) {
 
   let input: string
   try {
-    input = url ? await fetchPageText(url) : text.trim()
+    if (url) {
+      const pageText = await fetchPageText(url)
+      // SPAs (Apple Jobs, LinkedIn, Greenhouse etc.) return shell HTML with no job content
+      if (pageText.length < 400) {
+        return NextResponse.json({
+          error: 'This site loads job details with JavaScript — copy-paste the job description into the Paste tab instead.'
+        }, { status: 422 })
+      }
+      input = pageText
+    } else {
+      input = text.trim()
+    }
   } catch (e) {
     return NextResponse.json({ error: `Could not fetch URL: ${(e as Error).message}` }, { status: 400 })
   }

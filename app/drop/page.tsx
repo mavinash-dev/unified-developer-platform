@@ -272,11 +272,8 @@ function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
               <p className="text-[16px]" style={{ color: 'var(--accent-primary)' }}>{result.role}</p>
               <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>{result.company}</p>
             </div>
-            <a href={result.id ? `/tracker/${result.id}` : '/tracker'}
-              className="btn btn-md btn-primary w-full text-[15px] py-4 text-center" style={{ borderRadius: 14 }}>
-              Start application →
-            </a>
-            <button onClick={reset} className="btn btn-md btn-ghost w-full">Send another</button>
+            <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>Check your laptop — it&apos;s in the tracker now.</p>
+            <button onClick={reset} className="btn btn-md btn-ghost mt-2">Send another →</button>
           </div>
         )}
 
