@@ -39,7 +39,7 @@ export default function ProfilePage() {
   const [stats, setStats] = useState<Stats | null>(null)
   const [name, setName] = useState('')
   const [snippets, setSnippets] = useState<Snippet[]>([])
-  const [version, setVersion] = useState<{ version: string; prev: string | null; next: string | null } | null>(null)
+  const [version, setVersion] = useState<{ version: string | null; prev: string | null; next: string | null } | null>(null)
   const [saving, setSaving] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -70,6 +70,7 @@ export default function ProfilePage() {
         <div className="flex items-center justify-between gap-4">
           <EyebrowLabel>Profile</EyebrowLabel>
           {version && <VersionBadge version={version.version} next={version.next} />}
+
         </div>
         <h1 className="text-sub-large" style={{ color: 'var(--fg)' }}>
           {config.name ? <><span style={{ color: 'var(--accent-primary)' }}>{config.name}</span>.</> : 'Your profile.'}
@@ -564,9 +565,19 @@ function CopyBtn({ text }: { text: string }) {
 }
 
 
-function VersionBadge({ version, next }: { version: string; next: string | null }) {
+function VersionBadge({ version, next }: { version: string | null; next: string | null }) {
+  if (!version) {
+    // No release yet — show what's coming
+    const upNext = next ?? 'alpha'
+    return (
+      <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]" style={{ color: 'var(--fg-muted)', opacity: 0.5 }}>
+        <span>unreleased</span>
+        <span>·</span>
+        <span>up next: {greekSymbol(upNext)} {upNext}</span>
+      </div>
+    )
+  }
   const sym = greekSymbol(version)
-  const nextSym = next ? greekSymbol(next) : null
   return (
     <div className="flex items-center gap-3 shrink-0">
       <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px]"
@@ -576,9 +587,7 @@ function VersionBadge({ version, next }: { version: string; next: string | null 
       </div>
       {next && (
         <div className="flex items-center gap-1 text-[11px] font-mono" style={{ color: 'var(--fg-muted)', opacity: 0.55 }}>
-          <span>↑ up next:</span>
-          <span>{nextSym}</span>
-          <span>{next}</span>
+          <span>↑ up next: {greekSymbol(next)} {next}</span>
         </div>
       )}
     </div>
