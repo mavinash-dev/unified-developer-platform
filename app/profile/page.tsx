@@ -566,13 +566,18 @@ function CopyBtn({ text }: { text: string }) {
 
 function VersionBadge({ version, next }: { version: string | null; next: string | null }) {
   if (!version) {
-    // No release yet — show what's coming
     const upNext = next ?? 'alpha'
     return (
-      <div className="flex items-center gap-2 shrink-0 font-mono text-[11px]" style={{ color: 'var(--fg-muted)', opacity: 0.5 }}>
-        <span>unreleased</span>
-        <span>·</span>
-        <span>up next: {greekSymbol(upNext)} {upNext}</span>
+      <div className="flex items-center gap-2 shrink-0">
+        <span className="font-mono text-[10px] px-2 py-0.5 rounded-[6px]" style={{ color: 'var(--fg-muted)', background: 'var(--elevated)', border: '1px solid var(--border-subtle)' }}>
+          unreleased
+        </span>
+        <span className="font-mono text-[11px]" style={{ color: 'var(--fg-muted)', opacity: 0.5 }}>↑</span>
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-[8px]"
+          style={{ background: 'rgba(168,85,247,0.12)', border: '1px solid rgba(168,85,247,0.25)' }}>
+          <span className="text-[16px] leading-none" style={{ color: 'var(--accent-primary)' }}>{greekSymbol(upNext)}</span>
+          <span className="font-mono text-[11px] font-semibold" style={{ color: 'var(--accent-primary)' }}>{upNext}</span>
+        </div>
       </div>
     )
   }
