@@ -118,24 +118,10 @@ echo ""
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo "  ✓  All done. Release: $CURRENT"
 echo ""
-echo "  Starting dev server → http://localhost:3000"
+echo "  Starting server — watch the URL it prints below."
 echo ""
 echo "  Later: ./setup.sh --update   jump to latest release"
 echo "         ./setup.sh --clean    wipe your data and start fresh"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
 echo ""
-
-# Auto-open browser once server is ready
-(
-  for i in $(seq 1 30); do
-    sleep 1
-    if curl -sf http://localhost:3000 > /dev/null 2>&1; then
-      if command -v open &>/dev/null; then open http://localhost:3000
-      elif command -v xdg-open &>/dev/null; then xdg-open http://localhost:3000
-      fi
-      break
-    fi
-  done
-) &
-
 npm run dev
