@@ -1,9 +1,8 @@
 'use client'
 import { useEffect, useState } from 'react'
-import Link from 'next/link'
 import SkillRunner from '@/components/SkillRunner'
 import ResumeCard from '@/components/ResumeCard'
-import { Separator } from '@/components/ui/separator'
+import EyebrowLabel from '@/components/EyebrowLabel'
 
 interface Resume {
   id: number; company: string; role: string; ats_score: number | null
@@ -12,42 +11,55 @@ interface Resume {
 
 export default function ResumePage() {
   const [resumes, setResumes] = useState<Resume[]>([])
-
-  useEffect(() => {
-    fetch('/api/resumes').then(r => r.json()).then(setResumes)
-  }, [])
+  useEffect(() => { fetch('/api/resumes').then(r => r.json()).then(setResumes) }, [])
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b px-6 py-3 flex items-center justify-between">
-        <span className="font-bold text-lg">⚡ Unified Dev Dashboard</span>
-        <nav className="flex gap-6 text-sm text-muted-foreground">
-          <Link href="/" className="hover:text-foreground">Dashboard</Link>
-          <Link href="/resume" className="text-foreground font-medium">Resumes</Link>
-          <Link href="/scout" className="hover:text-foreground">Job Scout</Link>
-        </nav>
+    <div className="min-h-screen" style={{ background: 'var(--canvas)' }}>
+      <header className="mx-auto max-w-5xl flex flex-col gap-4 px-6 py-16 md:py-20">
+        <EyebrowLabel>Resume Manager</EyebrowLabel>
+        <h1 className="text-sub-large">
+          Build.{' '}
+          <span style={{ color: 'var(--accent-primary)' }}>Scan. Ship.</span>
+        </h1>
+        <p className="max-w-2xl text-lg" style={{ color: 'var(--fg-body)' }}>
+          Tailored resumes that pass the ATS gate at 85% before you ever see them.
+          Powered by open-source TF-IDF keyword matching.
+        </p>
       </header>
-      <main className="max-w-6xl mx-auto px-6 py-8 space-y-8">
-        <h1 className="text-2xl font-bold">Resume Manager</h1>
-        <Separator />
 
+      <hr className="border-t mx-6" style={{ borderColor: 'var(--border-subtle)' }} />
+
+      <section className="mx-auto max-w-5xl px-6 py-14">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div>
-            <h2 className="text-base font-semibold mb-3">Run /resume-update</h2>
-            <SkillRunner skill="resume" />
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <EyebrowLabel>01 / Run skill</EyebrowLabel>
+              <hr className="border-t" style={{ borderColor: 'var(--border-subtle)' }} />
+            </div>
+            <SkillRunner
+              skillId="resume-update"
+              description="Professional resume coach — build or tailor your resume with ATS validation"
+            />
           </div>
-          <div>
-            <h2 className="text-base font-semibold mb-3">Saved Resumes</h2>
+
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col gap-2">
+              <EyebrowLabel>02 / Saved resumes</EyebrowLabel>
+              <hr className="border-t" style={{ borderColor: 'var(--border-subtle)' }} />
+            </div>
             {resumes.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No resumes saved yet. Run the skill to create one.</p>
+              <div className="util-card">
+                <p className="text-[16px] font-medium" style={{ color: 'var(--fg-body)' }}>No resumes saved yet.</p>
+                <p className="text-[14px] mt-2" style={{ color: 'var(--fg-muted)' }}>Run the skill and save output to see them here.</p>
+              </div>
             ) : (
-              <div className="space-y-2">
+              <div className="flex flex-col gap-3">
                 {resumes.map(r => <ResumeCard key={r.id} resume={r} />)}
               </div>
             )}
           </div>
         </div>
-      </main>
+      </section>
     </div>
   )
 }

@@ -1,8 +1,6 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Progress } from '@/components/ui/progress'
-import { Badge } from '@/components/ui/badge'
+import EyebrowLabel from './EyebrowLabel'
 
 interface TokenData {
   daily: { total: number; in: number; out: number; limit: number; pct: number }
@@ -11,15 +9,15 @@ interface TokenData {
 }
 
 function fmt(n: number) {
-  if (n >= 1000000) return `${(n / 1000000).toFixed(1)}M`
-  if (n >= 1000) return `${(n / 1000).toFixed(1)}k`
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000)     return `${(n / 1_000).toFixed(1)}k`
   return String(n)
 }
 
-function statusColor(pct: number) {
-  if (pct >= 90) return 'text-red-500'
-  if (pct >= 75) return 'text-yellow-500'
-  return 'text-green-500'
+function barColor(pct: number) {
+  if (pct >= 90) return 'var(--destructive)'
+  if (pct >= 75) return 'var(--accent-yellow)'
+  return 'var(--accent-primary)'
 }
 
 export default function TokenMeter() {
@@ -27,64 +25,74 @@ export default function TokenMeter() {
 
   useEffect(() => {
     fetch('/api/tokens').then(r => r.json()).then(setData)
-    const id = setInterval(() => {
-      fetch('/api/tokens').then(r => r.json()).then(setData)
-    }, 30000)
+    const id = setInterval(() => fetch('/api/tokens').then(r => r.json()).then(setData), 30_000)
     return () => clearInterval(id)
   }, [])
 
-  if (!data) return (
-    <Card className="animate-pulse">
-      <CardHeader><CardTitle>Token Usage</CardTitle></CardHeader>
-      <CardContent><div className="h-16 bg-muted rounded" /></CardContent>
-    </Card>
-  )
-
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base font-semibold">Claude Token Usage</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Daily */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">Today</span>
-            <span className={statusColor(data.daily.pct)}>
-              {fmt(data.daily.total)} / {fmt(data.daily.limit)} ({data.daily.pct}%)
-            </span>
-          </div>
-          <Progress value={data.daily.pct} className="h-2" />
-          {data.daily.pct >= 80 && (
-            <p className="text-xs text-yellow-600 mt-1">⚠ Approaching daily limit</p>
-          )}
-        </div>
+    <div className="util-card dot-grid-corner h-full flex flex-col gap-6">
+      <div className="flex flex-col gap-2">
+        <EyebrowLabel>Token usage</EyebrowLabel>
+        <hr className="border-t" style={{ borderColor: 'var(--border-subtle)' }} />
+      </div>
 
-        {/* Monthly */}
-        <div>
-          <div className="flex justify-between text-sm mb-1">
-            <span className="text-muted-foreground">This Month</span>
-            <span className={statusColor(data.monthly.pct)}>
-              {fmt(data.monthly.total)} / {fmt(data.monthly.limit)} ({data.monthly.pct}%)
-            </span>
-          </div>
-          <Progress value={data.monthly.pct} className="h-2" />
+      {!data ? (
+        <div className="flex flex-col gap-4 animate-pulse">
+          <div className="h-8 rounded-lg" style={{ background: 'var(--elevated)' }} />
+          <div className="h-8 rounded-lg" style={{ background: 'var(--elevated)' }} />
         </div>
+      ) : (
+        <div className="flex flex-col gap-6">
+          {[
+            { label: 'Today', d: data.daily },
+            { label: 'This month', d: data.monthly },
+          ].map(({ label, d }) => (
+            <div key={label} className="flex flex-col gap-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-[14px] font-medium" style={{ color: 'var(--fg-body)' }}>{label}</span>
+                <span className="font-mono text-[13px]" style={{ color: barColor(d.pct) }}>
+                  {fmt(d.total)} / {fmt(d.limit)}
+                </span>
+              </div>
+              <div className="h-1.5 rounded-full overflow-hidden" style={{ background: 'var(--border-subtle)' }}>
+                <div
+                  className="h-full rounded-full transition-all duration-700"
+                  style={{
+                    width: `${Math.min(d.pct, 100)}%`,
+                    background: barColor(d.pct),
+                    boxShadow: d.pct > 5 ? `0 0 8px ${barColor(d.pct)}60` : 'none',
+                  }}
+                />
+              </div>
+              {d.pct >= 80 && (
+                <p className="text-[13px]" style={{ color: 'var(--accent-yellow)' }}>
+                  ⚠ {d.pct}% of {label === 'Today' ? 'daily' : 'monthly'} limit
+                </p>
+              )}
+            </div>
+          ))}
 
-        {/* By skill */}
-        {data.bySkill.length > 0 && (
-          <div className="pt-1">
-            <p className="text-xs text-muted-foreground mb-2">Today by skill</p>
-            <div className="flex gap-2 flex-wrap">
+          {data.bySkill.length > 0 && (
+            <div className="flex flex-col gap-3">
+              <EyebrowLabel>By skill today</EyebrowLabel>
               {data.bySkill.map(s => (
-                <Badge key={s.skill} variant="secondary" className="text-xs">
-                  {s.skill}: {fmt(s.tokens_in + s.tokens_out)}
-                </Badge>
+                <div key={s.skill} className="flex justify-between items-center">
+                  <span className="text-[14px] font-medium" style={{ color: 'var(--fg-body)' }}>/{s.skill}</span>
+                  <span className="font-mono text-[13px]" style={{ color: 'var(--accent-primary)' }}>
+                    {fmt(s.tokens_in + s.tokens_out)}
+                  </span>
+                </div>
               ))}
             </div>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+          )}
+
+          {data.bySkill.length === 0 && (
+            <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+              No usage yet today — run a skill to see tokens.
+            </p>
+          )}
+        </div>
+      )}
+    </div>
   )
 }
