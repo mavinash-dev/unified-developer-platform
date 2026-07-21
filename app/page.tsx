@@ -83,9 +83,7 @@ function DashboardContent() {
     fetch('/api/greeting').then(r => r.json()).then(d => setGreeting(d.greeting)).catch(() => {})
   }, [])
 
-  if (!userLoaded) return null
-
-  if (!userName) {
+  if (!userName && userLoaded) {
     return <Onboarding onComplete={name => setUserName(name)} />
   }
 
@@ -94,7 +92,7 @@ function DashboardContent() {
 
   if (activeSkillId) {
     return (
-      <div className="p-6 md:p-10 flex flex-col gap-6">
+      <div className="p-6 md:p-10 flex flex-col gap-6" style={{ opacity: userLoaded ? 1 : 0, transition: 'opacity 0.4s ease' }}>
         <div className="flex flex-col gap-1">
           {activeSkill?.category && (
             <EyebrowLabel color="var(--accent-primary)">{activeSkill.category}</EyebrowLabel>
@@ -110,10 +108,8 @@ function DashboardContent() {
   }
 
   return (
-    <div className="h-full flex flex-col justify-center">
+    <div className="h-full flex flex-col justify-center" style={{ opacity: userLoaded ? 1 : 0, transition: 'opacity 0.4s ease' }}>
       <header className="mx-auto max-w-2xl flex flex-col gap-6 px-6 py-20 md:py-32">
-        {/* <EyebrowLabel>Unified Developer Dashboard</EyebrowLabel> */}
-
         <h1 className="text-sub-large" style={{ color: 'var(--fg)' }}>
           {timeGreeting()},{' '}
           <Hi color="var(--accent-primary)">{userName}.</Hi>
@@ -124,8 +120,8 @@ function DashboardContent() {
         </p>
 
         <p
-          className="text-[17px] leading-relaxed transition-opacity duration-500"
-          style={{ color: 'var(--fg-muted)', opacity: greeting ? 1 : 0, minHeight: '1.6em' }}
+          className="text-[17px] leading-relaxed"
+          style={{ color: 'var(--fg-muted)', opacity: greeting ? 1 : 0, transition: 'opacity 0.6s ease', minHeight: '1.6em' }}
         >
           {greeting && <HighlightedGreeting text={greeting} />}
         </p>
