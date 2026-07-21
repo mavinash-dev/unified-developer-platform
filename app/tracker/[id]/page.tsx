@@ -3,6 +3,7 @@ import { useEffect, useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import EyebrowLabel from '@/components/EyebrowLabel'
+import Spinner from '@/components/Spinner'
 
 type Status = 'wishlist' | 'applied' | 'referral_pending' | 'interviewing' | 'offer' | 'rejected' | 'ghosted'
 
@@ -246,7 +247,7 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
 
   if (!app) return (
     <div className="min-h-screen flex items-center justify-center" style={{ background: 'var(--canvas)' }}>
-      <span className="font-mono text-[13px]" style={{ color: 'var(--fg-muted)' }}>Loading…</span>
+      <Spinner size="lg" />
     </div>
   )
 

@@ -1,6 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import EyebrowLabel from '@/components/EyebrowLabel'
+import Spinner from '@/components/Spinner'
 
 interface Session {
   id: number
@@ -170,7 +171,7 @@ export default function HistoryPage() {
 
             {loadingDetail ? (
               <div className="flex-1 flex items-center justify-center">
-                <span className="font-mono text-[13px]" style={{ color: 'var(--fg-muted)' }}>Loading…</span>
+                <Spinner size="md" />
               </div>
             ) : selected && (
               <div className="flex-1 overflow-y-auto">

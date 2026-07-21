@@ -3,6 +3,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import EyebrowLabel from '@/components/EyebrowLabel'
+import Spinner from '@/components/Spinner'
 
 interface Message { role: 'user' | 'assistant'; content: string; model?: string }
 
@@ -153,8 +154,11 @@ export default function ChatPage() {
                       td({ children }) { return <td className="px-3 py-1.5 border-b" style={{ borderColor: 'var(--border-subtle)' }}>{children}</td> },
                     }}
                   >
-                    {msg.content || (streaming && i === messages.length - 1 ? '▋' : '')}
+                    {msg.content || (streaming && i === messages.length - 1 ? ' ' : '')}
                   </ReactMarkdown>
+                  {streaming && i === messages.length - 1 && !msg.content && (
+                    <Spinner size="sm" />
+                  )}
                   {msg.model && (
                     <span className="font-mono text-[10px] mt-2 block" style={{ color: 'var(--fg-muted)', opacity: 0.5 }}>
                       {msg.model}

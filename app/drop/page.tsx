@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import Spinner from '@/components/Spinner'
 import { useRouter, useSearchParams } from 'next/navigation'
 
 type Stage = 'idle' | 'extracting' | 'done' | 'error'
@@ -249,7 +250,7 @@ function MobileDrop({ router }: { router: ReturnType<typeof useRouter> }) {
         {/* ── Sending ── */}
         {stage === 'sending' && (
           <div className="flex-1 flex flex-col items-center justify-center gap-5">
-            <div className="w-14 h-14 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: DROP_SOLID, borderTopColor: 'transparent' }} />
+            <Spinner size="lg" />
             <div className="flex flex-col items-center gap-1">
               <p className="text-[14px] font-medium" style={{ color: 'var(--fg)' }}>Sending to laptop…</p>
               <p className="text-[12px]" style={{ color: 'var(--fg-muted)' }}>OCR → extract → save — you can close this tab</p>
@@ -447,8 +448,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
                   <DotQR url={`${localUrl}?mobile=1`} size={200} dotColor="#3b0764" panelBg="#f0ebff" centerText="" />
                 ) : (
                   <div className="flex items-center justify-center" style={{ width: 220, height: 220 }}>
-                    <div className="w-8 h-8 border-2 border-t-transparent rounded-full animate-spin"
-                      style={{ borderColor: DROP_SOLID, borderTopColor: 'transparent' }} />
+                    <Spinner size="md" />
                   </div>
                 )}
               </div>
@@ -517,7 +517,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
             }
             {singleStage === 'extracting' && (
               <div className="flex items-center gap-3">
-                <div className="w-5 h-5 border-2 border-t-transparent rounded-full animate-spin shrink-0" style={{ borderColor: DROP_SOLID, borderTopColor: 'transparent' }} />
+                <Spinner size="sm" />
                 <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>Extracting…</p>
               </div>
             )}
@@ -534,7 +534,7 @@ function DesktopDrop({ router }: { router: ReturnType<typeof useRouter> }) {
           <>
             {singleStage === 'extracting' && (
               <div className="flex flex-col items-center gap-4 py-12">
-                <div className="w-10 h-10 border-2 border-t-transparent rounded-full animate-spin" style={{ borderColor: DROP_SOLID, borderTopColor: 'transparent' }} />
+                <Spinner size="md" />
                 <p className="text-[13px]" style={{ color: 'var(--fg-muted)' }}>Running OCR + Claude…</p>
               </div>
             )}
@@ -697,7 +697,7 @@ function BatchCard({ item, onSave }: { item: BatchItem; onSave: (force: boolean)
 
 function StatusBadge({ stage, saved }: { stage: Stage; saved?: boolean }) {
   if (saved) return <span className="font-mono text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(14,165,233,0.15)', color: DROP_SOLID }}>✓ saved</span>
-  if (stage === 'extracting') return <div className="w-4 h-4 border-2 border-t-transparent rounded-full animate-spin shrink-0" style={{ borderColor: DROP_SOLID, borderTopColor: 'transparent' }} />
+  if (stage === 'extracting') return <Spinner size="xs" />
   if (stage === 'done') return <span className="font-mono text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(14,165,233,0.15)', color: DROP_SOLID }}>ready</span>
   if (stage === 'error') return <span className="font-mono text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ background: 'rgba(239,68,68,0.15)', color: '#ef4444' }}>error</span>
   return <span className="font-mono text-[10px] px-2 py-0.5 rounded-full shrink-0" style={{ background: 'var(--elevated)', color: 'var(--fg-muted)' }}>pending</span>
