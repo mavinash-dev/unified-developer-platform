@@ -13,7 +13,7 @@ function getLocalIP(): string {
 
 export function GET() {
   const ip = getLocalIP()
-  const port = process.env.PORT ?? '3004'
+  const port = process.env.PORT ?? '3000'
   const hasVision = !!process.env.ANTHROPIC_API_KEY
   return NextResponse.json({
     ip,
