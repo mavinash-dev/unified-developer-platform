@@ -30,7 +30,7 @@ export default function TokenMeter() {
   return (
     <div className="util-card dot-grid-corner h-full flex flex-col gap-6">
       <div className="flex flex-col gap-2">
-        <EyebrowLabel>Token usage</EyebrowLabel>
+        <EyebrowLabel>Token usage — UDD runs only</EyebrowLabel>
         <hr className="border-t" style={{ borderColor: 'var(--border-subtle)' }} />
       </div>
 
@@ -85,9 +85,14 @@ export default function TokenMeter() {
           )}
 
           {data.bySkill.length === 0 && (
-            <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-              No usage yet today — run a skill to see tokens.
-            </p>
+            <div className="flex flex-col gap-1">
+              <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
+                No skill runs today yet.
+              </p>
+              <p className="text-[12px]" style={{ color: 'var(--fg-muted)', opacity: 0.6 }}>
+                This meter tracks tokens used through UDD only — not your Claude Code terminal usage (Claude CLI has no local usage file to read).
+              </p>
+            </div>
           )}
         </div>
       )}

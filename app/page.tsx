@@ -5,23 +5,42 @@ import Link from 'next/link'
 import TokenMeter from '@/components/TokenMeter'
 import SkillRunner from '@/components/SkillRunner'
 import EyebrowLabel from '@/components/EyebrowLabel'
+import Onboarding from '@/components/Onboarding'
 
 interface Skill { id: string; description: string; category: string }
 
+function greeting() {
+  const h = new Date().getHours()
+  if (h >= 5 && h < 12) return 'Good morning'
+  if (h >= 12 && h < 17) return 'Good afternoon'
+  if (h >= 17 && h < 22) return 'Good evening'
+  return 'Hey'
+}
+
 function DashboardContent() {
   const [skills, setSkills] = useState<Skill[]>([])
+  const [userName, setUserName] = useState<string | null>(null)
+  const [userLoaded, setUserLoaded] = useState(false)
   const searchParams = useSearchParams()
   const activeSkillId = searchParams.get('skill')
 
   useEffect(() => {
     fetch('/api/skills').then(r => r.json()).then(setSkills).catch(() => {})
+    fetch('/api/user').then(r => r.json()).then(u => {
+      setUserName(u.name || null)
+      setUserLoaded(true)
+    }).catch(() => setUserLoaded(true))
   }, [])
 
-  const activeSkill = skills.find(s => s.id === activeSkillId) ?? null
+  if (!userLoaded) return null
 
+  if (!userName) {
+    return <Onboarding onComplete={name => setUserName(name)} />
+  }
+
+  const activeSkill = skills.find(s => s.id === activeSkillId) ?? null
   const today = new Date().toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric' })
 
-  // If a skill is in the URL, show it immediately — don't wait for the skills list
   if (activeSkillId) {
     return (
       <div className="p-6 md:p-10 flex flex-col gap-6">
@@ -41,12 +60,11 @@ function DashboardContent() {
 
   return (
     <div>
-      {/* Page header */}
       <header className="mx-auto max-w-5xl flex flex-col gap-4 px-6 py-16 md:py-20">
         <EyebrowLabel>Unified Developer Dashboard</EyebrowLabel>
         <h1 className="text-sub-large" style={{ color: 'var(--fg)' }}>
-          Good morning,{' '}
-          <span style={{ color: 'var(--accent-primary)' }}>Avinash.</span>
+          {greeting()},{' '}
+          <span style={{ color: 'var(--accent-primary)' }}>{userName}.</span>
         </h1>
         <p className="max-w-2xl text-lg" style={{ color: 'var(--fg-body)' }}>
           {today} — your career intelligence platform.
@@ -56,7 +74,6 @@ function DashboardContent() {
 
       <hr className="border-t mx-6" style={{ borderColor: 'var(--border-subtle)' }} />
 
-      {/* Token meter + quick-launch */}
       <section className="mx-auto max-w-5xl px-6 py-14">
         <div className="mb-8 flex flex-col gap-2">
           <EyebrowLabel>01 / Overview</EyebrowLabel>
@@ -109,11 +126,10 @@ function DashboardContent() {
 
       <hr className="border-t mx-6" style={{ borderColor: 'var(--border-subtle)' }} />
 
-      {/* Skill count hint */}
       <section className="mx-auto max-w-5xl px-6 py-10">
         <p className="text-[14px]" style={{ color: 'var(--fg-muted)' }}>
-          {skills.length} skill{skills.length !== 1 ? 's' : ''} available — select one from the sidebar to launch.
-          New <span className="font-mono text-[13px]">~/.claude/commands/*.md</span> files appear automatically.
+          {skills.length} skill{skills.length !== 1 ? 's' : ''} available — select one from the sidebar.
+          New <span className="font-mono text-[13px]">skills/*.md</span> files with frontmatter appear automatically.
         </p>
       </section>
     </div>
@@ -122,7 +138,7 @@ function DashboardContent() {
 
 export default function Dashboard() {
   return (
-    <Suspense fallback={<div className="p-10 font-mono text-[13px]" style={{ color: 'var(--fg-muted)' }}>Loading…</div>}>
+    <Suspense fallback={null}>
       <DashboardContent />
     </Suspense>
   )

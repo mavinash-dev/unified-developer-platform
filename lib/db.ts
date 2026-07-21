@@ -49,6 +49,18 @@ db.exec(`
     report_data TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS sessions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    skill TEXT NOT NULL,
+    category TEXT DEFAULT '',
+    model TEXT DEFAULT '',
+    tokens_in INTEGER DEFAULT 0,
+    tokens_out INTEGER DEFAULT 0,
+    args TEXT DEFAULT '',
+    output TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  );
 `)
 
 export default db

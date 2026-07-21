@@ -178,6 +178,28 @@ export default function Sidebar() {
             <span className="font-mono text-[11px] opacity-60">≡</span>
             Resumes
           </Link>
+          <Link
+            href="/chat"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors"
+            style={{
+              background: pathname === '/chat' ? 'rgba(168,85,247,0.12)' : 'transparent',
+              color: pathname === '/chat' ? 'var(--accent-primary)' : 'var(--fg-body)',
+            }}
+          >
+            <span className="font-mono text-[11px] opacity-60">◎</span>
+            Chat
+          </Link>
+          <Link
+            href="/history"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors"
+            style={{
+              background: pathname === '/history' ? 'rgba(168,85,247,0.12)' : 'transparent',
+              color: pathname === '/history' ? 'var(--accent-primary)' : 'var(--fg-body)',
+            }}
+          >
+            <span className="font-mono text-[11px] opacity-60">⊙</span>
+            History
+          </Link>
         </div>
 
         <div className="mx-3 mb-3 h-px" style={{ background: 'var(--border-subtle)' }} />
