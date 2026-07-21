@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
   const extracted = await ingestRes.json() as {
     company?: string; role?: string; location?: string; remote?: boolean
     salary_range?: string; jd_summary?: string; key_skills?: string[]
-    _source?: string; error?: string
+    _source?: string; _incomplete?: boolean; error?: string
   }
 
   if (extracted.error || !extracted.company || !extracted.role) {
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     }, { status: 422 })
   }
 
-  const source = extracted._source ?? 'mobile-drop'
+  const source = extracted._incomplete ? 'mobile-drop-incomplete' : (extracted._source ?? 'mobile-drop')
 
   // Step 2: dedup check
   const existing = db.prepare(

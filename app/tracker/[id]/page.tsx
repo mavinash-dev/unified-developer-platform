@@ -300,8 +300,10 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
     setApp(updated)
   }
 
-  const tailorArgs = `Tailor resume for ${app.role} at ${app.company}${app.jd_summary ? `. JD summary: ${app.jd_summary}` : ''}${app.key_skills.length ? `. Key skills: ${app.key_skills.join(', ')}` : ''}`
-  const scoutArgs  = `${app.role} at ${app.company}${app.location ? ` (${app.location})` : ''}${app.jd_summary ? `. Role: ${app.jd_summary}` : ''}`
+  const tailorArgs   = `Tailor resume for ${app.role} at ${app.company}${app.jd_summary ? `. JD summary: ${app.jd_summary}` : ''}${app.key_skills.length ? `. Key skills: ${app.key_skills.join(', ')}` : ''}`
+  const scoutArgs    = `${app.role} at ${app.company}${app.location ? ` (${app.location})` : ''}${app.jd_summary ? `. Role: ${app.jd_summary}` : ''}`
+  const findUrlArgs  = `${app.role} at ${app.company}${app.location ? `, ${app.location}` : ''}`
+  const isIncomplete = !app.url && (!app.jd_summary || app.jd_summary.length < 30)
 
   return (
     <div className="min-h-screen" style={{ background: 'var(--canvas)' }}>
@@ -365,6 +367,25 @@ export default function TrackerDetailPage({ params }: { params: Promise<{ id: st
             Delete
           </button>
         </div>
+
+        {/* Incomplete extraction notice */}
+        {isIncomplete && (
+          <div className="flex items-start gap-4 rounded-[14px] px-5 py-4" style={{ background: 'rgba(251,191,36,0.07)', border: '1px solid rgba(251,191,36,0.25)' }}>
+            <span className="text-[20px] shrink-0">⚠️</span>
+            <div className="flex flex-col gap-2 flex-1 min-w-0">
+              <p className="text-[14px] font-semibold" style={{ color: 'var(--fg)' }}>Job details incomplete</p>
+              <p className="text-[13px] leading-relaxed" style={{ color: 'var(--fg-muted)' }}>
+                This was added from an image — no job description or URL was found. Use the skill below to find the original posting, then paste the URL in Edit details.
+              </p>
+              <button
+                onClick={() => router.push(`/?skill=find-job-url&args=${encodeURIComponent(findUrlArgs)}`)}
+                className="btn btn-sm btn-primary self-start text-[12px]"
+              >
+                🔍 Find job posting →
+              </button>
+            </div>
+          </div>
+        )}
 
         {/* JD Summary */}
         {app.jd_summary && (

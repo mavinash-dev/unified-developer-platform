@@ -120,7 +120,8 @@ export async function POST(req: NextRequest) {
     const result = await runClaude(buildPrompt(text), '__tracker_ingest__')
     const raw = result.text.trim()
     const json = raw.startsWith('{') ? JSON.parse(raw) : JSON.parse(raw.replace(/^```json?\n?/, '').replace(/```$/, ''))
-    return NextResponse.json({ ...json, _source: source, _chars: text.length })
+    const incomplete = !json.jd_summary || json.jd_summary.length < 30
+    return NextResponse.json({ ...json, _source: source, _chars: text.length, _incomplete: incomplete })
   } catch (e) {
     return NextResponse.json({ error: (e as Error).message }, { status: 500 })
   }
