@@ -37,17 +37,18 @@ function latestReleaseTag(cwd: string): string | null {
 export async function POST() {
   const cwd = process.cwd()
   try {
-    const pullOutput = run('git pull --ff-only', cwd)
-    const alreadyUpToDate = pullOutput.includes('Already up to date')
+    // Fetch latest tags and commits without changing anything yet
+    run('git fetch --tags --quiet', cwd)
 
-    if (!alreadyUpToDate) {
+    const latestTag = latestReleaseTag(cwd)
+    const alreadyUpToDate = latestTag === VERSION || (!latestTag && !VERSION)
+
+    if (!alreadyUpToDate && latestTag) {
+      run(`git checkout ${latestTag} --quiet`, cwd)
       execSync('npm install --silent', { cwd, encoding: 'utf-8' })
     }
 
     const commit = latestCommit(cwd)
-    const latestTag = latestReleaseTag(cwd)
-
-    // Is there a newer release tag than what's currently running?
     const newRelease = latestTag && latestTag !== VERSION ? latestTag : null
 
     return NextResponse.json({ ok: true, alreadyUpToDate, commit, runningVersion: VERSION, latestTag, newRelease })
