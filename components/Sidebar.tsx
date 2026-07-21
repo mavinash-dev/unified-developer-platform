@@ -141,7 +141,7 @@ export default function Sidebar() {
         <div className="px-3 pb-3 flex flex-col gap-0.5">
           <Link
             href="/"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
             style={{
               background: isNavActive('/') ? 'rgba(168,85,247,0.12)' : 'transparent',
               color: isNavActive('/') ? 'var(--accent-primary)' : 'var(--fg-body)',
@@ -152,7 +152,7 @@ export default function Sidebar() {
           </Link>
           <Link
             href="/chat"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
             style={{
               background: pathname === '/chat' ? 'rgba(168,85,247,0.12)' : 'transparent',
               color: pathname === '/chat' ? 'var(--accent-primary)' : 'var(--fg-body)',
@@ -163,7 +163,7 @@ export default function Sidebar() {
           </Link>
           <Link
             href="/history"
-            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors"
+            className="flex items-center gap-2.5 px-3 py-2 rounded-[8px] text-[13px] font-medium transition-colors cursor-pointer hover:bg-white/5"
             style={{
               background: pathname === '/history' ? 'rgba(168,85,247,0.12)' : 'transparent',
               color: pathname === '/history' ? 'var(--accent-primary)' : 'var(--fg-body)',
@@ -183,7 +183,7 @@ export default function Sidebar() {
             <div key={cat} className="px-3 mb-2">
               <button
                 onClick={() => toggleCategory(cat)}
-                className="w-full flex items-center justify-between px-1 py-1.5 mb-1"
+                className="w-full flex items-center justify-between px-1 py-1.5 mb-1 cursor-pointer"
               >
                 <span className="font-mono text-[10px] font-medium tracking-widest uppercase" style={{ color: 'var(--fg-muted)' }}>
                   {cat}
@@ -199,7 +199,7 @@ export default function Sidebar() {
                     <Link
                       key={s.id}
                       href={`/?skill=${s.id}`}
-                      className="flex items-center gap-2 px-3 py-2 rounded-[8px] text-[13px] transition-colors group"
+                      className="flex items-center gap-2 px-3 py-2 rounded-[8px] text-[13px] transition-colors group cursor-pointer hover:bg-white/5"
                       style={{
                         background: isSkillActive(s.id) ? 'rgba(168,85,247,0.12)' : 'transparent',
                         color: isSkillActive(s.id) ? 'var(--accent-primary)' : 'var(--fg-body)',
