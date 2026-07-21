@@ -67,17 +67,17 @@ if ! grep -q "VERSION = '${NEXT}'" lib/version.ts; then
   exit 1
 fi
 
-# Commit and tag
+# Commit, tag, and push
 git add lib/version.ts
 git commit -m "release: ${NEXT}"
 git tag "${NEXT}"
+git push
+git push --tags
 
 echo ""
 echo "  ✓ Released ${NEXT}"
 if [[ -n "$PREV" ]]; then
   echo "  ${PREV} → ${NEXT}"
 fi
-echo "  Tag: ${NEXT}"
-echo ""
-echo "  Push with: git push && git push --tags"
+echo "  Tag: ${NEXT} — pushed to origin"
 echo ""
