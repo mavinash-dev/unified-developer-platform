@@ -32,7 +32,7 @@ export default function ChatPage() {
     const text = input.trim()
     if (!text || streaming) return
 
-    const history = messages.map(({ role, content }) => ({ role, content }))
+    const history = messages.slice(-20).map(({ role, content }) => ({ role, content }))
     const userMsg: Message = { role: 'user', content: text }
     setMessages(p => [...p, userMsg, { role: 'assistant', content: '' }])
     setInput('')
@@ -105,6 +105,14 @@ export default function ChatPage() {
             {model}
           </span>
         )}
+      </div>
+
+      {/* Context notice */}
+      <div className="px-6 py-2 shrink-0 flex items-center gap-2 border-b" style={{ borderColor: 'var(--border-subtle)', background: 'var(--elevated)' }}>
+        <span className="font-mono text-[10px]" style={{ color: 'var(--fg-muted)', opacity: 0.6 }}>⚡</span>
+        <p className="font-mono text-[11px] leading-relaxed" style={{ color: 'var(--fg-muted)', opacity: 0.6 }}>
+          Last 20 messages kept in context · History resets on refresh · Long replies burn tokens fast — stay sharp, stay focused
+        </p>
       </div>
 
       {/* Messages */}
